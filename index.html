@@ -919,12 +919,31 @@
                 </div>
                 
                 <!-- Countdown helper -->
-                <div class="bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
-                    <p class="text-center text-gray-400 mb-2">Contador de ritmo</p>
-                    <div id="rhythm-counter" class="text-center text-6xl title-font text-orange-400">
+                <div class="bg-gray-800 rounded-lg p-6 border-2 border-orange-600">
+                    <p class="text-center text-orange-400 mb-4 title-font">🎯 INDICADOR DE SINCRONIZACIÓN</p>
+                    <div id="rhythm-counter" class="text-center text-6xl title-font text-orange-400 h-20 flex items-center justify-center">
                         ●
                     </div>
-                    <p class="text-center text-gray-500 text-xs mt-2">El punto parpadea con el ritmo</p>
+                    <p class="text-center text-gray-400 text-sm mt-4">Grita "¡YA!" cuando aparezca el mensaje verde</p>
+                    <div class="mt-4 bg-black/50 rounded p-3">
+                        <p class="text-xs text-gray-500 text-center">Próximo pico en:</p>
+                        <p id="peak-countdown" class="text-2xl title-font text-center text-orange-400">--</p>
+                    </div>
+                </div>
+                
+                <!-- Cycle progress for tech -->
+                <div class="mt-4 bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
+                    <div class="flex justify-between items-center">
+                        <div class="text-center flex-1">
+                            <p class="text-xs text-gray-500">CICLOS</p>
+                            <p id="tech-cycles" class="text-2xl title-font text-green-400">0/5</p>
+                        </div>
+                        <div class="w-px h-12 bg-gray-600"></div>
+                        <div class="text-center flex-1">
+                            <p class="text-xs text-gray-500">FALLOS</p>
+                            <p id="tech-fails" class="text-2xl title-font text-red-400">0/3</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1279,6 +1298,7 @@
             connections: { red: null, blue: null, green: null, yellow: null },
             selectedWire: null,
             locked: false,
+            lockdownTriggered: false,
             lockdownCode: null,
             keypadInput: '',
             
@@ -1287,6 +1307,8 @@
             reactorFails: 0,
             pistonPhase: 0,
             pistonInterval: null,
+            reactorStartTime: null,
+            reactorRhythmInterval: null,
             
             // Level 3: Radio
             currentPattern: null,
@@ -1434,6 +1456,11 @@
                     break;
                     
                 // Level 2 messages
+                case 'reactor-sync':
+                    // Sync reactor timing with operator
+                    state.reactorStartTime = data.startTime;
+                    break;
+                    
                 case 'charge-pressed':
                     handleChargeResult(data);
                     break;
@@ -1565,6 +1592,12 @@
         }
         
         function transitionToLevel(level) {
+            // Clean up previous level
+            if (state.reactorRhythmInterval) {
+                clearInterval(state.reactorRhythmInterval);
+                state.reactorRhythmInterval = null;
+            }
+            
             state.currentLevel = level;
             
             // Update indicators
@@ -1796,17 +1829,20 @@
         }
         
         function checkLevel1Solution() {
-            // Check for lockdown (2 correct)
+            // Count correct connections
             let correct = 0;
             Object.keys(WIRE_SOLUTION).forEach(color => {
                 if (state.connections[color] === WIRE_SOLUTION[color]) correct++;
             });
             
-            if (correct >= 2 && !state.locked) {
+            // Trigger lockdown at 2 correct (if not already locked)
+            if (correct >= 2 && !state.locked && !state.lockdownTriggered) {
+                state.lockdownTriggered = true;
                 triggerLockdown();
+                return; // Don't check for completion yet
             }
             
-            // Check complete solution
+            // Check complete solution (all 4 correct AND system unlocked)
             if (correct === 4 && !state.locked) {
                 completeLevel1();
             }
@@ -1860,81 +1896,220 @@
         function setupLevel2A() {
             const chargeBtn = document.getElementById('charge-btn');
             const piston = document.getElementById('reactor-piston');
+            const energyLevel = document.getElementById('energy-level');
             
-            // Piston animation cycle tracking
-            let pistonStart = Date.now();
+            // Sync start time with technician
+            state.reactorStartTime = Date.now();
+            sendMessage('reactor-sync', { startTime: state.reactorStartTime });
+            
             const cycleDuration = 2000; // 2 seconds per cycle
             
+            // Visual feedback on button
+            let canPress = true;
+            
             chargeBtn.addEventListener('click', () => {
-                AudioEngine.playCharge();
+                if (!canPress) return;
                 
-                const elapsed = (Date.now() - pistonStart) % cycleDuration;
+                AudioEngine.playCharge();
+                canPress = false;
+                chargeBtn.classList.add('opacity-50');
+                
+                const elapsed = (Date.now() - state.reactorStartTime) % cycleDuration;
                 const phase = elapsed / cycleDuration; // 0 to 1
                 
                 // Peak is at 0.5 (top of cycle)
                 const accuracy = Math.abs(phase - 0.5);
                 const isGood = accuracy < 0.15; // 15% tolerance
+                const isPerfect = accuracy < 0.08; // 8% for perfect
                 
                 if (isGood) {
                     state.reactorCycles++;
                     document.getElementById('cycle-count').textContent = `${state.reactorCycles}/5`;
-                    document.getElementById('timing-feedback').textContent = '✓ ¡Perfecto!';
-                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold';
                     
-                    // Update energy bar
-                    document.getElementById('energy-level').style.height = `${(state.reactorCycles / 5) * 100}%`;
+                    if (isPerfect) {
+                        document.getElementById('timing-feedback').textContent = '★ ¡PERFECTO! ★';
+                        document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold text-xl';
+                        chargeBtn.classList.add('ring-4', 'ring-green-400');
+                    } else {
+                        document.getElementById('timing-feedback').textContent = '✓ ¡Bien!';
+                        document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold';
+                    }
                     
-                    sendMessage('reactor-update', { cycles: state.reactorCycles, fails: state.reactorFails });
+                    // Update energy bar with animation
+                    energyLevel.style.height = `${(state.reactorCycles / 5) * 100}%`;
+                    
+                    // Flash effect
+                    piston.style.boxShadow = '0 0 30px #00ff00';
+                    setTimeout(() => piston.style.boxShadow = '', 300);
+                    
+                    sendMessage('reactor-update', { 
+                        cycles: state.reactorCycles, 
+                        fails: state.reactorFails,
+                        result: 'success',
+                        perfect: isPerfect
+                    });
                     
                     if (state.reactorCycles >= 5) {
                         completeLevel2();
+                        return;
                     }
                 } else {
                     state.reactorFails++;
                     state.totalErrors++;
                     document.getElementById('reactor-fails').textContent = state.reactorFails;
                     document.getElementById('overheat-warning').classList.remove('hidden');
-                    document.getElementById('timing-feedback').textContent = '✗ ¡Fuera de tiempo!';
+                    
+                    // Show how off timing was
+                    const offBy = Math.round(accuracy * cycleDuration);
+                    document.getElementById('timing-feedback').textContent = `✗ ¡${offBy}ms fuera de tiempo!`;
                     document.getElementById('timing-feedback').className = 'mt-4 text-center text-red-400 font-bold';
                     
+                    // Error effects
+                    chargeBtn.classList.add('ring-4', 'ring-red-500');
+                    piston.style.boxShadow = '0 0 30px #ff0000';
+                    document.getElementById('error-overlay').classList.add('error-flash');
+                    
+                    setTimeout(() => {
+                        piston.style.boxShadow = '';
+                        document.getElementById('error-overlay').classList.remove('error-flash');
+                    }, 500);
+                    
                     AudioEngine.playError();
-                    sendMessage('reactor-update', { cycles: state.reactorCycles, fails: state.reactorFails });
+                    sendMessage('reactor-update', { 
+                        cycles: state.reactorCycles, 
+                        fails: state.reactorFails,
+                        result: 'fail',
+                        offBy: offBy
+                    });
+                    
+                    // Check for game over (3 fails)
+                    if (state.reactorFails >= 3) {
+                        document.getElementById('timing-feedback').textContent = '🔥 ¡SOBRECALENTAMIENTO CRÍTICO!';
+                        chargeBtn.disabled = true;
+                        // Could add reset logic here
+                    }
                 }
                 
+                // Reset button after cooldown
                 setTimeout(() => {
-                    document.getElementById('timing-feedback').textContent = 'Espera la señal...';
+                    canPress = true;
+                    chargeBtn.classList.remove('opacity-50', 'ring-4', 'ring-green-400', 'ring-red-500');
+                    document.getElementById('timing-feedback').textContent = 'Espera la señal del técnico...';
                     document.getElementById('timing-feedback').className = 'mt-4 text-center text-gray-500';
                 }, 1000);
             });
         }
         
         function setupLevel2B() {
-            // Start rhythm indicator
             const rhythmCounter = document.getElementById('rhythm-counter');
-            let phase = 0;
+            const peakInterval = document.getElementById('peak-interval');
+            const wave = document.getElementById('oscilloscope-wave');
             
-            setInterval(() => {
-                phase = (phase + 0.05) % 1;
+            // Sync with operator's timing
+            state.reactorStartTime = Date.now();
+            
+            const cycleDuration = 2000;
+            let lastPeakTime = 0;
+            
+            // Update wave animation speed to match
+            wave.style.setProperty('--wave-speed', `${cycleDuration}ms`);
+            
+            // Rhythm indicator that syncs with piston
+            const rhythmInterval = setInterval(() => {
+                if (state.currentLevel !== 2) {
+                    clearInterval(rhythmInterval);
+                    return;
+                }
+                
+                const elapsed = (Date.now() - state.reactorStartTime) % cycleDuration;
+                const phase = elapsed / cycleDuration;
+                
+                // Calculate visual feedback
                 const brightness = Math.sin(phase * Math.PI * 2) * 0.5 + 0.5;
                 const size = 1 + brightness * 0.5;
                 rhythmCounter.style.opacity = 0.3 + brightness * 0.7;
                 rhythmCounter.style.transform = `scale(${size})`;
                 
-                // Flash at peak
-                if (phase > 0.48 && phase < 0.52) {
-                    rhythmCounter.textContent = '★';
-                    rhythmCounter.className = 'text-center text-6xl title-font text-green-400';
+                // Peak detection (around 0.5 phase = top of wave)
+                const isPeak = phase > 0.45 && phase < 0.55;
+                
+                if (isPeak) {
+                    rhythmCounter.textContent = '¡YA!';
+                    rhythmCounter.className = 'text-center text-5xl title-font text-green-400 font-black';
+                    
+                    // Play beep at peak (but not too frequently)
+                    if (Date.now() - lastPeakTime > 1500) {
+                        AudioEngine.playBeepShort();
+                        lastPeakTime = Date.now();
+                    }
+                } else if (phase > 0.3 && phase < 0.45) {
+                    // Countdown to peak
+                    rhythmCounter.textContent = '...';
+                    rhythmCounter.className = 'text-center text-5xl title-font text-yellow-400';
+                } else if (phase > 0.55 && phase < 0.7) {
+                    // Just passed peak
+                    rhythmCounter.textContent = '○';
+                    rhythmCounter.className = 'text-center text-5xl title-font text-gray-500';
                 } else {
                     rhythmCounter.textContent = '●';
                     rhythmCounter.className = 'text-center text-6xl title-font text-orange-400';
                 }
-            }, 100);
+                
+                // Update peak interval display
+                const timeToNext = ((0.5 - phase + 1) % 1) * cycleDuration / 1000;
+                peakInterval.textContent = `${timeToNext.toFixed(1)}s`;
+                
+                // Update countdown display
+                const countdownEl = document.getElementById('peak-countdown');
+                if (countdownEl) {
+                    countdownEl.textContent = `${timeToNext.toFixed(1)}s`;
+                }
+                
+            }, 50); // Update every 50ms for smooth animation
+            
+            state.reactorRhythmInterval = rhythmInterval;
         }
         
         function updateReactorStatus(data) {
             state.reactorCycles = data.cycles;
             state.reactorFails = data.fails;
-            // Update UI on player B's screen if needed
+            
+            // Update UI on player B's screen
+            if (state.playerRole === 'B') {
+                const resultEl = document.getElementById('rhythm-counter');
+                const cyclesEl = document.getElementById('tech-cycles');
+                const failsEl = document.getElementById('tech-fails');
+                
+                // Update counters
+                if (cyclesEl) cyclesEl.textContent = `${data.cycles}/5`;
+                if (failsEl) failsEl.textContent = `${data.fails}/3`;
+                
+                if (data.result === 'success') {
+                    resultEl.textContent = data.perfect ? '★★★' : '✓ BIEN';
+                    resultEl.className = 'text-center text-5xl title-font text-green-400 h-20 flex items-center justify-center';
+                    AudioEngine.playSuccess();
+                    
+                    // Flash effect on counter
+                    if (cyclesEl) {
+                        cyclesEl.classList.add('scale-125');
+                        setTimeout(() => cyclesEl.classList.remove('scale-125'), 300);
+                    }
+                } else if (data.result === 'fail') {
+                    resultEl.textContent = '✗ FALLO';
+                    resultEl.className = 'text-center text-5xl title-font text-red-400 h-20 flex items-center justify-center';
+                    showAlert('¡FALLO!', `${data.offBy}ms fuera de tiempo`);
+                    AudioEngine.playError();
+                    
+                    // Flash effect on fail counter
+                    if (failsEl) {
+                        failsEl.classList.add('scale-125');
+                        setTimeout(() => failsEl.classList.remove('scale-125'), 300);
+                    }
+                    
+                    // Vibrate on mobile
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                }
+            }
         }
         
         function completeLevel2() {
@@ -2108,6 +2283,7 @@
                 state.totalErrors++;
                 AudioEngine.playError();
                 showAlert('¡PARED!', 'No puedes pasar');
+                sendMessage('maze-result', { result: 'wall', pos: state.playerPos });
             } else if (cell === 2) {
                 // Mine
                 state.totalErrors += 3;
@@ -2116,6 +2292,7 @@
                 showAlert('💥 ¡MINA!', 'Vuelves al inicio');
                 state.playerPos = { x: 1, y: 1 };
                 renderPlayerMaze();
+                sendMessage('maze-result', { result: 'mine', pos: state.playerPos });
             } else if (cell === 3) {
                 // Exit - Success!
                 state.playerPos = newPos;
