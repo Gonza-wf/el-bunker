@@ -333,11 +333,148 @@
         .text-flicker {
             animation: textFlicker 2s infinite;
         }
+        
+        /* Glitch text effect */
+        @keyframes glitchText {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        .glitch-text {
+            animation: glitchText 0.3s infinite;
+            color: #ff0000 !important;
+            text-shadow: 2px 0 #00ff00, -2px 0 #0000ff;
+        }
+        
+        /* Corruption overlay for manual */
+        @keyframes staticNoise {
+            0%, 100% { opacity: 0.03; }
+            50% { opacity: 0.08; }
+        }
+        
+        .static-noise {
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 25;
+            animation: staticNoise 0.5s infinite;
+        }
+        
+        /* Pulsing red vignette */
+        .emergency-vignette {
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(139, 0, 0, 0.4) 100%);
+            pointer-events: none;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .manual-page {
+                padding: 1rem;
+                transform: none !important; /* Remove rotation to save space */
+                margin: 0.5rem;
+            }
+            
+            .manual-page svg {
+                max-height: 180px;
+            }
+            
+            .manual-page h2 {
+                font-size: 1.25rem;
+            }
+            
+            .manual-page h3 {
+                font-size: 0.9rem;
+            }
+            
+            .manual-page p, .manual-page li {
+                font-size: 0.8rem;
+            }
+            
+            .stamp {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            #wire-area {
+                padding: 1rem;
+            }
+            
+            .wire {
+                width: 5rem;
+                height: 2.5rem;
+            }
+            
+            .terminal {
+                width: 3rem;
+                height: 2.5rem;
+            }
+            
+            #main-panel-a {
+                padding: 1rem;
+                margin: 0.5rem;
+            }
+            
+            #security-keypad .grid {
+                gap: 0.25rem;
+            }
+            
+            .keypad-btn {
+                padding: 0.5rem;
+                font-size: 1rem;
+            }
+            
+            /* Fix header on mobile */
+            .title-font.text-6xl {
+                font-size: 2.5rem;
+            }
+            
+            .title-font.text-8xl {
+                font-size: 3rem;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 380px) {
+            .manual-page {
+                padding: 0.75rem;
+            }
+            
+            .manual-page svg {
+                max-height: 150px;
+            }
+            
+            .wire {
+                width: 4rem;
+                height: 2rem;
+            }
+            
+            .terminal {
+                width: 2.5rem;
+                height: 2rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Ensure touch targets are large enough */
+        @media (pointer: coarse) {
+            .wire, .terminal, .keypad-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen overflow-hidden">
-    <!-- Scanline overlay -->
-    <div class="scanline fixed inset-0 z-50 pointer-events-none"></div>
+<body class="bg-gray-900 min-h-screen overflow-y-auto">
+    <!-- Scanline overlay - lower z-index so it doesn't interfere -->
+    <div class="scanline fixed inset-0 z-30 pointer-events-none"></div>
+    
+    <!-- Emergency pulsing overlay - The Panic Filter -->
+    <div id="emergency-overlay" class="fixed inset-0 bg-red-900 opacity-0 pointer-events-none z-25 transition-opacity duration-500"></div>
     
     <!-- Error flash overlay -->
     <div id="error-overlay" class="fixed inset-0 z-45 pointer-events-none"></div>
@@ -433,7 +570,7 @@
     </div>
     
     <!-- PLAYER A SCREEN - MECHANISMS -->
-    <div id="player-a-screen" class="hidden min-h-screen bg-gray-900 relative">
+    <div id="player-a-screen" class="hidden min-h-screen h-auto bg-gray-900 relative overflow-y-auto">
         <!-- Emergency ambient glow -->
         <div id="emergency-glow" class="absolute inset-0 bg-red-900/20 emergency-ambient pointer-events-none"></div>
         
@@ -577,7 +714,7 @@
     </div>
     
     <!-- PLAYER B SCREEN - MANUAL -->
-    <div id="player-b-screen" class="hidden min-h-screen bg-amber-900 relative overflow-auto">
+    <div id="player-b-screen" class="hidden min-h-screen h-auto bg-amber-900 relative overflow-y-auto pb-8">
         <!-- Desk texture background -->
         <div class="absolute inset-0 bg-gradient-to-br from-amber-800 to-amber-950"></div>
         
@@ -1262,6 +1399,13 @@
                 case 'tension-update':
                     handleTensionUpdate(data);
                     break;
+                    
+                case 'start-emergency':
+                    // Sync emergency start from Player A
+                    if (!state.emergencyStarted) {
+                        handleEmergencyStarted();
+                    }
+                    break;
             }
         }
         
@@ -1540,6 +1684,8 @@
             state.emergencyStarted = true;
             state.startTime = Date.now();
             
+            console.log("⚠️ Protocolo de Emergencia activado");
+            
             // Show tension meter
             document.getElementById('tension-meter').classList.remove('hidden');
             
@@ -1549,6 +1695,7 @@
             state.emergencyInterval = setInterval(() => {
                 if (state.solved) {
                     clearInterval(state.emergencyInterval);
+                    resetEmergencyEffects();
                     return;
                 }
                 
@@ -1557,7 +1704,7 @@
                 
                 // 1. Increase ambient frequency (from 60Hz upward - more unsettling)
                 if (AudioEngine.ambientNode && AudioEngine.ctx) {
-                    const newFreq = Math.min(60 + (elapsed * 1.5), 150); // Cap at 150Hz
+                    const newFreq = Math.min(60 + (elapsed * 0.5), 150); // Cap at 150Hz
                     AudioEngine.ambientNode.frequency.setTargetAtTime(newFreq, AudioEngine.ctx.currentTime, 0.5);
                 }
                 
@@ -1579,32 +1726,43 @@
                     el.style.animationDuration = `${sparkSpeed}s`;
                 });
                 
-                // 5. Increase red glow intensity progressively
+                // 5. Pulsing red overlay effect (sine wave based)
+                const emergencyOverlay = document.getElementById('emergency-overlay');
+                if (emergencyOverlay) {
+                    const pulseOpacity = (Math.sin(elapsed * 2) * 0.15) + 0.15;
+                    emergencyOverlay.style.opacity = Math.min(pulseOpacity + (elapsed / 200), 0.5);
+                }
+                
+                // 6. Increase red glow intensity progressively
                 const intensity = Math.min(0.6, 0.2 + (elapsed / 120));
                 const emergencyGlow = document.getElementById('emergency-glow');
                 if (emergencyGlow) {
                     emergencyGlow.style.opacity = intensity;
-                    // Also add pulsing effect that gets faster
                     const pulseSpeed = Math.max(0.5, 2 - (elapsed / 60));
                     emergencyGlow.style.animationDuration = `${pulseSpeed}s`;
                 }
                 
-                // 6. Add screen shake at high tension (after 60 seconds)
+                // 7. Add screen shake at high tension (after 60 seconds)
                 if (elapsed > 60 && Math.random() > 0.9) {
                     triggerScreenShake();
                 }
                 
-                // 7. Random sparks sound at higher tension
+                // 8. Random sparks sound at higher tension
                 if (elapsed > 30 && Math.random() > 0.95) {
                     AudioEngine.playSpark();
                 }
                 
-                // 8. Periodic haptic pulses on mobile (heartbeat effect)
+                // 9. Periodic haptic pulses on mobile (heartbeat effect)
                 if (elapsed > 45 && Math.floor(elapsed) % 3 === 0) {
                     AudioEngine.triggerHaptic(30);
                 }
                 
-                // 9. Update tension meter UI
+                // 10. Random vibration for tension (Player A)
+                if (Math.random() > 0.95) {
+                    AudioEngine.triggerHaptic(20);
+                }
+                
+                // 11. Update tension meter UI
                 updateTensionMeter(elapsed);
                 
                 // Send tension update to Player B
@@ -1614,6 +1772,26 @@
                 });
                 
             }, 1000);
+        }
+        
+        // Reset all emergency effects when solved
+        function resetEmergencyEffects() {
+            // Reset red overlay
+            const emergencyOverlay = document.getElementById('emergency-overlay');
+            if (emergencyOverlay) emergencyOverlay.style.opacity = '0';
+            
+            // Reset ambient audio
+            if (AudioEngine.ambientNode && AudioEngine.ctx) {
+                AudioEngine.ambientNode.frequency.setTargetAtTime(60, AudioEngine.ctx.currentTime, 1);
+            }
+            
+            // Remove static noise if exists
+            const staticNoise = document.getElementById('static-noise-overlay');
+            if (staticNoise) staticNoise.remove();
+            
+            // Reset emergency glow
+            const emergencyGlow = document.getElementById('emergency-glow');
+            if (emergencyGlow) emergencyGlow.style.opacity = '0';
         }
         
         function updateTensionMeter(elapsed) {
@@ -1674,6 +1852,8 @@
             state.emergencyStarted = true;
             state.startTime = Date.now();
             
+            console.log("⚠️ Player B: Emergencia detectada");
+            
             // Show warning message
             const warningDiv = document.createElement('div');
             warningDiv.id = 'emergency-warning';
@@ -1691,20 +1871,46 @@
             if (manualPage) {
                 manualPage.style.boxShadow = '0 0 30px rgba(255, 0, 0, 0.3)';
             }
+            
+            // Add static noise overlay
+            const staticNoise = document.createElement('div');
+            staticNoise.id = 'static-noise-overlay';
+            staticNoise.className = 'static-noise';
+            staticNoise.style.opacity = '0';
+            document.body.appendChild(staticNoise);
         }
         
         function handleTensionUpdate(data) {
             state.tensionLevel = data.tensionLevel;
+            const elapsed = data.elapsed;
             
             // Subtle effects on Player B's screen based on tension
             const manualPage = document.getElementById('manual-page');
-            if (manualPage && data.elapsed > 30) {
-                const shake = Math.sin(data.elapsed * 0.5) * (data.tensionLevel * 0.5);
+            if (manualPage && elapsed > 30) {
+                const shake = Math.sin(elapsed * 0.5) * (data.tensionLevel * 0.5);
                 manualPage.style.transform = `rotate(${1 + shake * 0.1}deg)`;
+                
+                // Increase red glow on manual
+                const glowIntensity = Math.min(60, (elapsed - 30) / 2);
+                manualPage.style.boxShadow = `0 0 ${glowIntensity}px rgba(255, 0, 0, 0.4)`;
+            }
+            
+            // Show static noise after 20 seconds
+            if (elapsed > 20) {
+                const staticNoise = document.getElementById('static-noise-overlay');
+                if (staticNoise) {
+                    const noiseOpacity = Math.min(0.15, (elapsed - 20) / 200);
+                    staticNoise.style.opacity = noiseOpacity;
+                }
+            }
+            
+            // Apply glitch effect to random text after 30 seconds
+            if (elapsed > 30 && Math.random() > 0.9) {
+                applyGlitchEffect();
             }
             
             // Flicker the lights on Player B side at high tension
-            if (data.elapsed > 45) {
+            if (elapsed > 45) {
                 const powerOverlay = document.getElementById('power-failure-overlay');
                 if (powerOverlay && Math.random() > 0.9) {
                     powerOverlay.style.opacity = '0.3';
@@ -1713,6 +1919,57 @@
                     }, 100);
                 }
             }
+            
+            // More intense effects after 60 seconds
+            if (elapsed > 60) {
+                // Random haptic on Player B's device too
+                if (Math.random() > 0.95) {
+                    AudioEngine.triggerHaptic(30);
+                }
+                
+                // Occasional screen flash
+                if (Math.random() > 0.97) {
+                    const powerOverlay = document.getElementById('power-failure-overlay');
+                    if (powerOverlay) {
+                        powerOverlay.style.opacity = '0.6';
+                        setTimeout(() => {
+                            powerOverlay.style.opacity = state.errorCount >= 3 ? '0.3' : '0';
+                        }, 50);
+                    }
+                }
+            }
+        }
+        
+        // Glitch effect for Player B's manual text
+        function applyGlitchEffect() {
+            const textElements = document.querySelectorAll('#manual-page p, #manual-page li, #manual-page h3');
+            if (textElements.length === 0) return;
+            
+            const randomElement = textElements[Math.floor(Math.random() * textElements.length)];
+            const originalText = randomElement.textContent;
+            const originalClass = randomElement.className;
+            
+            // Glitch characters
+            const glitchChars = "!@#$%^&*()_+-=[]{}|;':\",./<>?█▓▒░";
+            
+            // Corrupt the text temporarily
+            let corruptedText = '';
+            for (let i = 0; i < Math.min(originalText.length, 20); i++) {
+                if (Math.random() > 0.5) {
+                    corruptedText += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+                } else {
+                    corruptedText += originalText[i] || '';
+                }
+            }
+            
+            randomElement.textContent = 'ERROR: SISTEMA CORRUPTO...';
+            randomElement.classList.add('glitch-text');
+            
+            // Restore after brief moment
+            setTimeout(() => {
+                randomElement.textContent = originalText;
+                randomElement.className = originalClass;
+            }, 300);
         }
         
         // Check if lockdown should trigger
@@ -1995,6 +2252,17 @@
             if (state.emergencyInterval) {
                 clearInterval(state.emergencyInterval);
             }
+            
+            // Reset all emergency effects
+            resetEmergencyEffects();
+            
+            // Remove static noise overlay
+            const staticNoise = document.getElementById('static-noise-overlay');
+            if (staticNoise) staticNoise.remove();
+            
+            // Remove emergency warning
+            const emergencyWarning = document.getElementById('emergency-warning');
+            if (emergencyWarning) emergencyWarning.remove();
             
             playerAScreen.classList.add('hidden');
             playerBScreen.classList.add('hidden');
