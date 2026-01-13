@@ -237,6 +237,31 @@
             animation: chargeGlow 0.5s ease-in-out infinite;
         }
         
+        /* Sync bar animation */
+        @keyframes syncBarMove {
+            0% { left: 0%; }
+            100% { left: 100%; }
+        }
+        
+        .sync-bar-animate {
+            animation: syncBarMove var(--sync-duration, 1.5s) linear infinite;
+        }
+        
+        /* Target zone pulse when bar is in zone */
+        @keyframes targetPulse {
+            0%, 100% { background-color: rgba(34, 197, 94, 0.2); }
+            50% { background-color: rgba(34, 197, 94, 0.5); }
+        }
+        
+        .target-active {
+            animation: targetPulse 0.2s ease-in-out infinite;
+        }
+        
+        /* Sync bar glow effect */
+        .sync-bar-glow {
+            box-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff, 0 0 45px #00ffff;
+        }
+        
         /* Radio dial rotation */
         @keyframes dialSweep {
             0%, 100% { transform: rotate(-45deg); }
@@ -346,6 +371,55 @@
         
         .green-pulse {
             animation: greenPulse 2s ease-in-out infinite;
+        }
+        
+        /* Door closing animation */
+        @keyframes doorClose {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(0); }
+        }
+        
+        .door-close-left {
+            transform: translateX(0) !important;
+        }
+        
+        .door-close-right {
+            transform: translateX(0) !important;
+        }
+        
+        /* Typing cursor effect */
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .typing-cursor::after {
+            content: '█';
+            animation: blink 0.7s infinite;
+            color: #22c55e;
+        }
+        
+        /* Star rating animation */
+        @keyframes starPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .star-animate {
+            animation: starPop 0.3s ease-out forwards;
+            opacity: 0;
+        }
+        
+        /* Rank reveal animation */
+        @keyframes rankReveal {
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .rank-reveal {
+            animation: rankReveal 0.5s ease-out forwards;
         }
         
         /* Terminal occupied indicator */
@@ -590,7 +664,8 @@
             <div class="bg-gray-800 border-4 border-orange-600 rounded-lg p-8 max-w-2xl w-full shadow-2xl glow-yellow">
                 <div class="text-center mb-6">
                     <h2 class="title-font text-2xl text-orange-500">⚛️ REACTOR DE FUSIÓN</h2>
-                    <p class="text-gray-400 text-sm mt-2">Presiona CARGA cuando el técnico diga "¡YA!"</p>
+                    <p class="text-gray-400 text-sm mt-2">Presiona CARGA exactamente cuando el técnico diga "¡YA!"</p>
+                    <p class="text-yellow-500 text-xs mt-1">⚡ El técnico ve la barra de sincronización - ¡confía en él!</p>
                 </div>
                 
                 <!-- Reactor visualization -->
@@ -883,12 +958,39 @@
                     <p class="text-gray-600 mt-2">Guía de Sincronización</p>
                 </div>
                 
-                <!-- Oscilloscope -->
+                <!-- Oscilloscope with Sync Bar -->
                 <div class="bg-gray-900 rounded-lg p-4 border-2 border-orange-600 mb-6">
-                    <p class="text-orange-400 text-xs mb-2 text-center">OSCILOSCOPIO</p>
-                    <div class="relative h-32 bg-black rounded overflow-hidden">
+                    <p class="text-orange-400 text-xs mb-2 text-center">OSCILOSCOPIO - BARRA DE SINCRONIZACIÓN</p>
+                    
+                    <!-- Sync Bar Display -->
+                    <div class="relative h-20 bg-black rounded overflow-hidden mb-4 border-2 border-gray-700">
+                        <!-- Grid lines -->
+                        <div class="absolute inset-0 flex">
+                            <div class="flex-1 border-r border-gray-800"></div>
+                            <div class="flex-1 border-r border-gray-800"></div>
+                            <div class="flex-1 border-r border-yellow-600 border-2"></div>
+                            <div class="flex-1 border-r border-gray-800"></div>
+                            <div class="flex-1"></div>
+                        </div>
+                        
+                        <!-- Target zone (center) -->
+                        <div class="absolute top-0 bottom-0 left-[40%] w-[20%] bg-green-500/20 border-x-2 border-green-500">
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-green-400 text-xs font-bold">
+                                ¡YA!
+                            </div>
+                        </div>
+                        
+                        <!-- Moving sync bar -->
+                        <div id="sync-bar" class="absolute top-0 bottom-0 w-1 bg-cyan-400 shadow-lg transition-none" style="left: 0%; box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;">
+                            <div class="absolute -top-1 left-1/2 transform -translate-x-1/2 text-cyan-400 text-lg">▼</div>
+                            <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 text-cyan-400 text-lg">▲</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wave visualization -->
+                    <div class="relative h-24 bg-black rounded overflow-hidden">
                         <!-- Grid -->
-                        <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"40\"><rect fill=\"none\" stroke=\"%23333\" stroke-width=\"0.5\" width=\"40\" height=\"40\"/></svg>');"></div>
+                        <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;40&quot; height=&quot;40&quot;><rect fill=&quot;none&quot; stroke=&quot;%23333&quot; stroke-width=&quot;0.5&quot; width=&quot;40&quot; height=&quot;40&quot;/></svg>');"></div>
                         
                         <!-- Wave -->
                         <svg id="oscilloscope-wave" class="absolute inset-0 w-[200%] h-full wave-animate" viewBox="0 0 800 100" preserveAspectRatio="none">
@@ -902,8 +1004,8 @@
                     
                     <!-- Timing display -->
                     <div class="mt-4 text-center">
-                        <p class="text-gray-500 text-xs">INTERVALO DE PICO</p>
-                        <p id="peak-interval" class="text-4xl title-font text-orange-400">2.0s</p>
+                        <p class="text-gray-500 text-xs">CICLO DE SINCRONIZACIÓN</p>
+                        <p id="peak-interval" class="text-4xl title-font text-orange-400">1.5s</p>
                     </div>
                 </div>
                 
@@ -911,11 +1013,12 @@
                 <div class="bg-amber-100 rounded-lg p-4 border-2 border-amber-400 mb-6">
                     <h3 class="text-gray-800 font-bold mb-3">📝 INSTRUCCIONES:</h3>
                     <ol class="text-gray-700 space-y-2 text-sm list-decimal list-inside">
-                        <li>Observa el ritmo de la onda</li>
-                        <li>Cuando la onda llegue al <span class="font-bold text-green-600">PICO</span>, di "¡YA!"</li>
-                        <li>El operador debe presionar CARGA en ese momento</li>
-                        <li>Completa <span class="font-bold">5 ciclos</span> exitosos</li>
+                        <li>Observa la <span class="font-bold text-cyan-600">barra azul</span> moviéndose</li>
+                        <li>Cuando la barra entre en la <span class="font-bold text-green-600">zona verde</span>, grita "¡YA!"</li>
+                        <li>El operador debe presionar CARGA inmediatamente</li>
+                        <li>Completa <span class="font-bold">5 ciclos</span> exitosos (máx 3 fallos)</li>
                     </ol>
+                    <p class="mt-3 text-xs text-gray-600 italic">💡 Tienes ~250ms de margen. Cuanto más preciso, mejor.</p>
                 </div>
                 
                 <!-- Countdown helper -->
@@ -924,7 +1027,7 @@
                     <div id="rhythm-counter" class="text-center text-6xl title-font text-orange-400 h-20 flex items-center justify-center">
                         ●
                     </div>
-                    <p class="text-center text-gray-400 text-sm mt-4">Grita "¡YA!" cuando aparezca el mensaje verde</p>
+                    <p class="text-center text-gray-400 text-sm mt-4">Grita "¡YA!" cuando la barra entre en la zona verde</p>
                     <div class="mt-4 bg-black/50 rounded p-3">
                         <p class="text-xs text-gray-500 text-center">Próximo pico en:</p>
                         <p id="peak-countdown" class="text-2xl title-font text-center text-orange-400">--</p>
@@ -1078,7 +1181,90 @@
         </div>
     </div>
     
-    <!-- SUCCESS SCREEN -->
+    <!-- DOOR CLOSING ANIMATION -->
+    <div id="door-animation" class="hidden fixed inset-0 z-[90] pointer-events-none">
+        <div id="door-left" class="absolute top-0 left-0 w-1/2 h-full bg-gray-800 border-r-4 border-yellow-600 transform -translate-x-full transition-transform duration-1000 ease-in-out">
+            <div class="absolute inset-0 flex items-center justify-end pr-8">
+                <div class="text-6xl">🔒</div>
+            </div>
+            <div class="absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
+                <div class="w-8 h-24 bg-yellow-600 rounded-full border-4 border-yellow-400"></div>
+            </div>
+        </div>
+        <div id="door-right" class="absolute top-0 right-0 w-1/2 h-full bg-gray-800 border-l-4 border-yellow-600 transform translate-x-full transition-transform duration-1000 ease-in-out">
+            <div class="absolute inset-0 flex items-center justify-start pl-8">
+                <div class="text-6xl">🔒</div>
+            </div>
+            <div class="absolute top-1/2 left-0 transform -translate-x-1/2 -translate-y-1/2">
+                <div class="w-8 h-24 bg-yellow-600 rounded-full border-4 border-yellow-400"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- VICTORY SCREEN -->
+    <div id="victory-screen" class="hidden fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+        <!-- Animated background particles -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute w-2 h-2 bg-green-500 rounded-full animate-ping" style="top: 20%; left: 30%;"></div>
+            <div class="absolute w-2 h-2 bg-green-400 rounded-full animate-ping" style="top: 60%; left: 70%; animation-delay: 0.5s;"></div>
+            <div class="absolute w-2 h-2 bg-green-300 rounded-full animate-ping" style="top: 40%; left: 50%; animation-delay: 1s;"></div>
+            <div class="absolute w-3 h-3 bg-yellow-500 rounded-full animate-ping" style="top: 80%; left: 20%; animation-delay: 0.3s;"></div>
+            <div class="absolute w-3 h-3 bg-yellow-400 rounded-full animate-ping" style="top: 10%; left: 80%; animation-delay: 0.7s;"></div>
+        </div>
+        
+        <div class="relative z-10 glow-green p-8 border-4 border-green-500 bg-gray-900 max-w-md w-full rounded-lg">
+            <!-- Trophy icon with animation -->
+            <div class="text-7xl mb-4 animate-bounce">🏆</div>
+            
+            <h1 class="title-font text-4xl text-green-500 mb-2 flicker">MISIÓN CUMPLIDA</h1>
+            <p class="text-green-300 text-sm mb-6">El búnker ha sido sellado con éxito</p>
+            
+            <!-- Stats terminal -->
+            <div class="space-y-3 font-mono text-left bg-black p-4 border-2 border-green-900 rounded mb-6">
+                <div class="flex justify-between items-center border-b border-green-900 pb-2">
+                    <span class="text-green-400">ESTADO:</span>
+                    <span class="text-white font-bold">BÚNKER SELLADO ✓</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-green-900 pb-2">
+                    <span class="text-green-400">TIEMPO TOTAL:</span>
+                    <span id="victory-time" class="text-white font-bold title-font text-xl">00:00</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-green-900 pb-2">
+                    <span class="text-green-400">ERRORES:</span>
+                    <span id="victory-errors" class="text-white font-bold title-font text-xl">0</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-green-900 pb-2">
+                    <span class="text-green-400">EFICIENCIA:</span>
+                    <span id="victory-efficiency" class="text-cyan-400 font-bold">---%</span>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-green-400">RANGO:</span>
+                    <span id="victory-rank" class="text-yellow-500 font-bold title-font text-2xl">---</span>
+                </div>
+            </div>
+            
+            <!-- Rank description -->
+            <div id="rank-description" class="text-gray-400 text-sm mb-6 h-12 flex items-center justify-center">
+                <span id="rank-desc-text"></span>
+            </div>
+            
+            <!-- Team evaluation -->
+            <div class="bg-gray-800 rounded p-3 mb-6 border border-gray-700">
+                <p class="text-xs text-gray-500 mb-2">EVALUACIÓN DEL EQUIPO</p>
+                <div class="flex justify-center gap-1" id="star-rating">
+                    <!-- Stars will be added by JS -->
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="w-full bg-green-700 hover:bg-green-600 text-white p-4 font-bold transition-all hover:scale-105 title-font text-lg rounded border-2 border-green-500">
+                🔄 REINICIAR SISTEMA
+            </button>
+            
+            <p class="text-gray-600 text-xs mt-4">Gracias por jugar El Búnker</p>
+        </div>
+    </div>
+    
+    <!-- SUCCESS SCREEN (legacy, kept for compatibility) -->
     <div id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden">
         <div id="success-bg" class="absolute inset-0 green-pulse"></div>
         
@@ -1309,6 +1495,9 @@
             pistonInterval: null,
             reactorStartTime: null,
             reactorRhythmInterval: null,
+            lastTargetTime: null,
+            syncBarAnimating: false,
+            cycleDuration: 1500, // 1.5 seconds per cycle
             
             // Level 3: Radio
             currentPattern: null,
@@ -1459,6 +1648,24 @@
                 case 'reactor-sync':
                     // Sync reactor timing with operator
                     state.reactorStartTime = data.startTime;
+                    state.cycleDuration = data.cycleDuration || 1500;
+                    if (state.playerRole === 'B' && state.currentLevel === 2) {
+                        startOscilloscope();
+                    }
+                    break;
+                    
+                case 'pulse-check':
+                    // Technician validates the operator's timing
+                    if (state.playerRole === 'B') {
+                        handlePulseCheck(data);
+                    }
+                    break;
+                    
+                case 'pulse-result':
+                    // Operator receives result from technician
+                    if (state.playerRole === 'A') {
+                        handlePulseResult(data);
+                    }
                     break;
                     
                 case 'charge-pressed':
@@ -1898,11 +2105,20 @@
             const piston = document.getElementById('reactor-piston');
             const energyLevel = document.getElementById('energy-level');
             
+            // Reset reactor state
+            state.reactorCycles = 0;
+            state.reactorFails = 0;
+            state.cycleDuration = 1500; // 1.5 seconds per cycle
+            
             // Sync start time with technician
             state.reactorStartTime = Date.now();
-            sendMessage('reactor-sync', { startTime: state.reactorStartTime });
+            sendMessage('reactor-sync', { 
+                startTime: state.reactorStartTime,
+                cycleDuration: state.cycleDuration
+            });
             
-            const cycleDuration = 2000; // 2 seconds per cycle
+            // Update piston animation speed
+            piston.style.setProperty('--piston-speed', `${state.cycleDuration}ms`);
             
             // Visual feedback on button
             let canPress = true;
@@ -1914,90 +2130,225 @@
                 canPress = false;
                 chargeBtn.classList.add('opacity-50');
                 
-                const elapsed = (Date.now() - state.reactorStartTime) % cycleDuration;
-                const phase = elapsed / cycleDuration; // 0 to 1
+                // Send pulse to technician for validation
+                const clickTime = Date.now();
+                sendMessage('pulse-check', { time: clickTime });
                 
-                // Peak is at 0.5 (top of cycle)
-                const accuracy = Math.abs(phase - 0.5);
-                const isGood = accuracy < 0.15; // 15% tolerance
-                const isPerfect = accuracy < 0.08; // 8% for perfect
+                document.getElementById('timing-feedback').textContent = '⏳ Verificando...';
+                document.getElementById('timing-feedback').className = 'mt-4 text-center text-yellow-400';
                 
-                if (isGood) {
-                    state.reactorCycles++;
-                    document.getElementById('cycle-count').textContent = `${state.reactorCycles}/5`;
-                    
-                    if (isPerfect) {
-                        document.getElementById('timing-feedback').textContent = '★ ¡PERFECTO! ★';
-                        document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold text-xl';
-                        chargeBtn.classList.add('ring-4', 'ring-green-400');
-                    } else {
-                        document.getElementById('timing-feedback').textContent = '✓ ¡Bien!';
-                        document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold';
-                    }
-                    
-                    // Update energy bar with animation
-                    energyLevel.style.height = `${(state.reactorCycles / 5) * 100}%`;
-                    
-                    // Flash effect
-                    piston.style.boxShadow = '0 0 30px #00ff00';
-                    setTimeout(() => piston.style.boxShadow = '', 300);
-                    
-                    sendMessage('reactor-update', { 
-                        cycles: state.reactorCycles, 
-                        fails: state.reactorFails,
-                        result: 'success',
-                        perfect: isPerfect
-                    });
-                    
-                    if (state.reactorCycles >= 5) {
-                        completeLevel2();
-                        return;
-                    }
-                } else {
-                    state.reactorFails++;
-                    state.totalErrors++;
-                    document.getElementById('reactor-fails').textContent = state.reactorFails;
-                    document.getElementById('overheat-warning').classList.remove('hidden');
-                    
-                    // Show how off timing was
-                    const offBy = Math.round(accuracy * cycleDuration);
-                    document.getElementById('timing-feedback').textContent = `✗ ¡${offBy}ms fuera de tiempo!`;
-                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-red-400 font-bold';
-                    
-                    // Error effects
-                    chargeBtn.classList.add('ring-4', 'ring-red-500');
-                    piston.style.boxShadow = '0 0 30px #ff0000';
-                    document.getElementById('error-overlay').classList.add('error-flash');
-                    
-                    setTimeout(() => {
-                        piston.style.boxShadow = '';
-                        document.getElementById('error-overlay').classList.remove('error-flash');
-                    }, 500);
-                    
-                    AudioEngine.playError();
-                    sendMessage('reactor-update', { 
-                        cycles: state.reactorCycles, 
-                        fails: state.reactorFails,
-                        result: 'fail',
-                        offBy: offBy
-                    });
-                    
-                    // Check for game over (3 fails)
-                    if (state.reactorFails >= 3) {
-                        document.getElementById('timing-feedback').textContent = '🔥 ¡SOBRECALENTAMIENTO CRÍTICO!';
-                        chargeBtn.disabled = true;
-                        // Could add reset logic here
-                    }
-                }
-                
-                // Reset button after cooldown
+                // Reset button after cooldown (result will come from technician)
                 setTimeout(() => {
                     canPress = true;
                     chargeBtn.classList.remove('opacity-50', 'ring-4', 'ring-green-400', 'ring-red-500');
+                    if (!document.getElementById('timing-feedback').classList.contains('text-green-400') &&
+                        !document.getElementById('timing-feedback').classList.contains('text-red-400')) {
+                        document.getElementById('timing-feedback').textContent = 'Espera la señal del técnico...';
+                        document.getElementById('timing-feedback').className = 'mt-4 text-center text-gray-500';
+                    }
+                }, 800);
+            });
+        }
+        
+        // Oscilloscope sync bar animation for technician
+        function startOscilloscope() {
+            const bar = document.getElementById('sync-bar');
+            if (!bar || state.syncBarAnimating) return;
+            
+            state.syncBarAnimating = true;
+            const cycleDuration = state.cycleDuration || 1500;
+            
+            function animate() {
+                if (state.currentLevel !== 2) {
+                    state.syncBarAnimating = false;
+                    return;
+                }
+                
+                // Reset bar to left without transition
+                bar.style.transition = 'none';
+                bar.style.left = '0%';
+                
+                // Force browser to process position change
+                bar.offsetHeight;
+                
+                // Move to right with smooth transition
+                bar.style.transition = `left ${cycleDuration / 1000}s linear`;
+                bar.style.left = '100%';
+                
+                // When bar reaches target zone (center), update lastTargetTime
+                setTimeout(() => {
+                    if (state.currentLevel === 2) {
+                        state.lastTargetTime = Date.now();
+                        
+                        // Flash the target zone
+                        const targetZone = bar.parentElement.querySelector('.bg-green-500\\/20');
+                        if (targetZone) {
+                            targetZone.classList.add('target-active');
+                            setTimeout(() => targetZone.classList.remove('target-active'), 300);
+                        }
+                        
+                        // Update rhythm counter
+                        const rhythmCounter = document.getElementById('rhythm-counter');
+                        if (rhythmCounter) {
+                            rhythmCounter.textContent = '¡YA!';
+                            rhythmCounter.className = 'text-center text-5xl title-font text-green-400 font-black h-20 flex items-center justify-center';
+                            AudioEngine.playBeepShort();
+                        }
+                    }
+                }, cycleDuration * 0.5); // 50% of cycle = center
+                
+                // Restart animation
+                setTimeout(() => {
+                    if (state.currentLevel === 2) {
+                        animate();
+                    } else {
+                        state.syncBarAnimating = false;
+                    }
+                }, cycleDuration + 50); // Small margin for restart
+            }
+            
+            animate();
+        }
+        
+        // Technician validates operator's pulse timing
+        function handlePulseCheck(data) {
+            const clickTime = data.time;
+            const diff = Math.abs(clickTime - state.lastTargetTime);
+            const tolerance = 250; // 250ms tolerance
+            const perfectTolerance = 100; // 100ms for perfect
+            
+            let result;
+            if (diff < perfectTolerance) {
+                result = { success: true, perfect: true, diff: diff };
+            } else if (diff < tolerance) {
+                result = { success: true, perfect: false, diff: diff };
+            } else {
+                result = { success: false, perfect: false, diff: diff };
+            }
+            
+            // Handle locally for technician UI
+            if (result.success) {
+                state.reactorCycles++;
+                AudioEngine.playSuccess();
+                
+                // Update counters
+                document.getElementById('tech-cycles').textContent = `${state.reactorCycles}/5`;
+                
+                // Visual feedback
+                const rhythmCounter = document.getElementById('rhythm-counter');
+                rhythmCounter.textContent = result.perfect ? '★★★' : '✓ BIEN';
+                rhythmCounter.className = 'text-center text-5xl title-font text-green-400 h-20 flex items-center justify-center';
+                
+                if (state.reactorCycles >= 5) {
+                    // Level complete - notify operator
+                    sendMessage('pulse-result', { 
+                        success: true, 
+                        perfect: result.perfect, 
+                        cycles: state.reactorCycles,
+                        fails: state.reactorFails,
+                        complete: true 
+                    });
+                    completeLevel2();
+                    return;
+                }
+            } else {
+                state.reactorFails++;
+                state.totalErrors++;
+                AudioEngine.playError();
+                
+                // Update counters
+                document.getElementById('tech-fails').textContent = `${state.reactorFails}/3`;
+                
+                // Visual feedback
+                const rhythmCounter = document.getElementById('rhythm-counter');
+                rhythmCounter.textContent = '✗ FALLO';
+                rhythmCounter.className = 'text-center text-5xl title-font text-red-400 h-20 flex items-center justify-center';
+                
+                showAlert('¡FALLO!', `${result.diff}ms fuera de tiempo`);
+                
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                
+                if (state.reactorFails >= 3) {
+                    showAlert('🔥 CRÍTICO', '¡Demasiados fallos!');
+                }
+            }
+            
+            // Send result back to operator
+            sendMessage('pulse-result', { 
+                success: result.success, 
+                perfect: result.perfect,
+                diff: result.diff,
+                cycles: state.reactorCycles,
+                fails: state.reactorFails,
+                complete: false
+            });
+        }
+        
+        // Operator receives pulse result from technician
+        function handlePulseResult(data) {
+            const chargeBtn = document.getElementById('charge-btn');
+            const piston = document.getElementById('reactor-piston');
+            const energyLevel = document.getElementById('energy-level');
+            
+            state.reactorCycles = data.cycles;
+            state.reactorFails = data.fails;
+            
+            // Update displays
+            document.getElementById('cycle-count').textContent = `${data.cycles}/5`;
+            document.getElementById('reactor-fails').textContent = data.fails;
+            energyLevel.style.height = `${(data.cycles / 5) * 100}%`;
+            
+            if (data.success) {
+                if (data.perfect) {
+                    document.getElementById('timing-feedback').textContent = '★ ¡PERFECTO! ★';
+                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold text-xl';
+                } else {
+                    document.getElementById('timing-feedback').textContent = '✓ ¡Bien!';
+                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold';
+                }
+                
+                chargeBtn.classList.add('ring-4', 'ring-green-400');
+                piston.style.boxShadow = '0 0 30px #00ff00';
+                setTimeout(() => {
+                    piston.style.boxShadow = '';
+                    chargeBtn.classList.remove('ring-4', 'ring-green-400');
+                }, 500);
+                
+                AudioEngine.playSuccess();
+                
+                if (data.complete) {
+                    completeLevel2();
+                }
+            } else {
+                document.getElementById('timing-feedback').textContent = `✗ ¡${data.diff}ms fuera de tiempo!`;
+                document.getElementById('timing-feedback').className = 'mt-4 text-center text-red-400 font-bold';
+                document.getElementById('overheat-warning').classList.remove('hidden');
+                
+                chargeBtn.classList.add('ring-4', 'ring-red-500');
+                piston.style.boxShadow = '0 0 30px #ff0000';
+                document.getElementById('error-overlay').classList.add('error-flash');
+                
+                setTimeout(() => {
+                    piston.style.boxShadow = '';
+                    chargeBtn.classList.remove('ring-4', 'ring-red-500');
+                    document.getElementById('error-overlay').classList.remove('error-flash');
+                }, 500);
+                
+                AudioEngine.playError();
+                
+                if (data.fails >= 3) {
+                    document.getElementById('timing-feedback').textContent = '🔥 ¡SOBRECALENTAMIENTO CRÍTICO!';
+                    chargeBtn.disabled = true;
+                }
+            }
+            
+            // Reset feedback after delay
+            setTimeout(() => {
+                if (state.currentLevel === 2 && !chargeBtn.disabled) {
                     document.getElementById('timing-feedback').textContent = 'Espera la señal del técnico...';
                     document.getElementById('timing-feedback').className = 'mt-4 text-center text-gray-500';
-                }, 1000);
-            });
+                }
+            }, 1500);
         }
         
         function setupLevel2B() {
@@ -2005,64 +2356,52 @@
             const peakInterval = document.getElementById('peak-interval');
             const wave = document.getElementById('oscilloscope-wave');
             
-            // Sync with operator's timing
-            state.reactorStartTime = Date.now();
+            // Reset state
+            state.reactorCycles = 0;
+            state.reactorFails = 0;
+            state.lastTargetTime = Date.now();
             
-            const cycleDuration = 2000;
-            let lastPeakTime = 0;
+            // Update displays
+            document.getElementById('tech-cycles').textContent = '0/5';
+            document.getElementById('tech-fails').textContent = '0/3';
+            
+            // Set cycle duration display
+            peakInterval.textContent = `${(state.cycleDuration / 1000).toFixed(1)}s`;
             
             // Update wave animation speed to match
-            wave.style.setProperty('--wave-speed', `${cycleDuration}ms`);
+            wave.style.setProperty('--wave-speed', `${state.cycleDuration}ms`);
             
-            // Rhythm indicator that syncs with piston
+            // Start the oscilloscope sync bar
+            startOscilloscope();
+            
+            // Rhythm indicator that syncs with sync bar
             const rhythmInterval = setInterval(() => {
                 if (state.currentLevel !== 2) {
                     clearInterval(rhythmInterval);
                     return;
                 }
                 
-                const elapsed = (Date.now() - state.reactorStartTime) % cycleDuration;
-                const phase = elapsed / cycleDuration;
-                
-                // Calculate visual feedback
-                const brightness = Math.sin(phase * Math.PI * 2) * 0.5 + 0.5;
-                const size = 1 + brightness * 0.5;
-                rhythmCounter.style.opacity = 0.3 + brightness * 0.7;
-                rhythmCounter.style.transform = `scale(${size})`;
-                
-                // Peak detection (around 0.5 phase = top of wave)
-                const isPeak = phase > 0.45 && phase < 0.55;
-                
-                if (isPeak) {
-                    rhythmCounter.textContent = '¡YA!';
-                    rhythmCounter.className = 'text-center text-5xl title-font text-green-400 font-black';
-                    
-                    // Play beep at peak (but not too frequently)
-                    if (Date.now() - lastPeakTime > 1500) {
-                        AudioEngine.playBeepShort();
-                        lastPeakTime = Date.now();
-                    }
-                } else if (phase > 0.3 && phase < 0.45) {
-                    // Countdown to peak
-                    rhythmCounter.textContent = '...';
-                    rhythmCounter.className = 'text-center text-5xl title-font text-yellow-400';
-                } else if (phase > 0.55 && phase < 0.7) {
-                    // Just passed peak
-                    rhythmCounter.textContent = '○';
-                    rhythmCounter.className = 'text-center text-5xl title-font text-gray-500';
-                } else {
-                    rhythmCounter.textContent = '●';
-                    rhythmCounter.className = 'text-center text-6xl title-font text-orange-400';
-                }
-                
-                // Update peak interval display
-                const timeToNext = ((0.5 - phase + 1) % 1) * cycleDuration / 1000;
-                peakInterval.textContent = `${timeToNext.toFixed(1)}s`;
+                // Calculate time since last target
+                const timeSinceTarget = Date.now() - state.lastTargetTime;
+                const phase = (timeSinceTarget % state.cycleDuration) / state.cycleDuration;
                 
                 // Update countdown display
+                const timeToNext = ((1 - phase) * state.cycleDuration) / 1000;
                 const countdownEl = document.getElementById('peak-countdown');
                 if (countdownEl) {
                     countdownEl.textContent = `${timeToNext.toFixed(1)}s`;
+                }
+                
+                // Visual rhythm feedback (outside of peak moments)
+                if (phase > 0.15 && phase < 0.35) {
+                    rhythmCounter.textContent = '...';
+                    rhythmCounter.className = 'text-center text-5xl title-font text-yellow-400 h-20 flex items-center justify-center';
+                } else if (phase > 0.55 && phase < 0.7) {
+                    rhythmCounter.textContent = '○';
+                    rhythmCounter.className = 'text-center text-5xl title-font text-gray-500 h-20 flex items-center justify-center';
+                } else if (phase > 0.7) {
+                    rhythmCounter.textContent = '●';
+                    rhythmCounter.className = 'text-center text-6xl title-font text-orange-400 h-20 flex items-center justify-center';
                 }
                 
             }, 50); // Update every 50ms for smooth animation
@@ -2113,6 +2452,14 @@
         }
         
         function completeLevel2() {
+            // Stop the sync bar animation
+            state.syncBarAnimating = false;
+            
+            if (state.reactorRhythmInterval) {
+                clearInterval(state.reactorRhythmInterval);
+                state.reactorRhythmInterval = null;
+            }
+            
             AudioEngine.playSuccess();
             sendMessage('level-complete', { nextLevel: 3 });
             setTimeout(() => transitionToLevel(3), 1500);
@@ -2357,6 +2704,200 @@
         // FINAL SUCCESS
         // ============================================
         function showFinalSuccess() {
+            AudioEngine.stopAmbient();
+            
+            // First, show door closing animation
+            showDoorAnimation(() => {
+                // After doors close, show victory screen
+                showVictoryScreen();
+            });
+        }
+        
+        function showDoorAnimation(callback) {
+            const doorAnimation = document.getElementById('door-animation');
+            const doorLeft = document.getElementById('door-left');
+            const doorRight = document.getElementById('door-right');
+            
+            doorAnimation.classList.remove('hidden');
+            
+            // Play door closing sound
+            if (AudioEngine.ctx && AudioEngine.enabled) {
+                AudioEngine.resume();
+                const osc = AudioEngine.ctx.createOscillator();
+                const gain = AudioEngine.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, AudioEngine.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(40, AudioEngine.ctx.currentTime + 1);
+                gain.gain.setValueAtTime(0.2, AudioEngine.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.4, AudioEngine.ctx.currentTime + 0.5);
+                gain.gain.linearRampToValueAtTime(0.1, AudioEngine.ctx.currentTime + 1);
+                osc.connect(gain);
+                gain.connect(AudioEngine.ctx.destination);
+                osc.start();
+                osc.stop(AudioEngine.ctx.currentTime + 1);
+            }
+            
+            // Trigger door close animation
+            setTimeout(() => {
+                doorLeft.classList.add('door-close-left');
+                doorRight.classList.add('door-close-right');
+            }, 100);
+            
+            // After doors close, execute callback
+            setTimeout(() => {
+                if (navigator.vibrate) navigator.vibrate(200);
+                callback();
+            }, 1200);
+        }
+        
+        function showVictoryScreen() {
+            playerAScreen.classList.add('hidden');
+            playerBScreen.classList.add('hidden');
+            document.getElementById('door-animation').classList.add('hidden');
+            
+            const victoryScreen = document.getElementById('victory-screen');
+            victoryScreen.classList.remove('hidden');
+            
+            // Calculate time
+            let elapsed = 0;
+            if (state.startTime) {
+                elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                document.getElementById('victory-time').textContent = 
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // Show errors
+            document.getElementById('victory-errors').textContent = state.totalErrors;
+            
+            // Calculate efficiency (based on errors and time)
+            // Base efficiency of 100%, lose 5% per error, lose 1% per 30 seconds over 3 minutes
+            let efficiency = 100;
+            efficiency -= state.totalErrors * 5;
+            if (elapsed > 180) {
+                efficiency -= Math.floor((elapsed - 180) / 30);
+            }
+            efficiency = Math.max(0, Math.min(100, efficiency));
+            document.getElementById('victory-efficiency').textContent = `${efficiency}%`;
+            
+            // Calculate rank
+            let rank, rankDesc, stars;
+            if (state.totalErrors === 0 && elapsed < 180) {
+                rank = "ELITE S+";
+                rankDesc = "¡Perfección absoluta! Trabajo de élite.";
+                stars = 5;
+            } else if (state.totalErrors === 0) {
+                rank = "ELITE S";
+                rankDesc = "Sin errores. Equipo excepcional.";
+                stars = 5;
+            } else if (state.totalErrors <= 2 && elapsed < 240) {
+                rank = "ESPECIALISTA A";
+                rankDesc = "Coordinación impecable bajo presión.";
+                stars = 4;
+            } else if (state.totalErrors <= 4) {
+                rank = "VETERANO B";
+                rankDesc = "Buen trabajo en equipo, pocas fallas.";
+                stars = 3;
+            } else if (state.totalErrors <= 7) {
+                rank = "SOBREVIVIENTE C";
+                rankDesc = "Lo lograron, pero con dificultades.";
+                stars = 2;
+            } else if (state.totalErrors <= 12) {
+                rank = "NOVATO D";
+                rankDesc = "Escaparon por poco. Necesitan práctica.";
+                stars = 1;
+            } else {
+                rank = "APRENDIZ F";
+                rankDesc = "Muchos errores, pero lo lograron.";
+                stars = 1;
+            }
+            
+            // Animate stats appearing one by one
+            setTimeout(() => {
+                // Show efficiency with color coding
+                const effEl = document.getElementById('victory-efficiency');
+                if (efficiency >= 80) effEl.className = 'text-green-400 font-bold';
+                else if (efficiency >= 60) effEl.className = 'text-yellow-400 font-bold';
+                else if (efficiency >= 40) effEl.className = 'text-orange-400 font-bold';
+                else effEl.className = 'text-red-400 font-bold';
+            }, 500);
+            
+            // Animate rank with typing effect
+            setTimeout(() => {
+                const rankEl = document.getElementById('victory-rank');
+                rankEl.classList.add('rank-reveal');
+                typeEffect(rankEl, rank, () => {
+                    // After rank is typed, show description
+                    setTimeout(() => {
+                        const descEl = document.getElementById('rank-desc-text');
+                        typeEffect(descEl, rankDesc);
+                    }, 300);
+                });
+            }, 1000);
+            
+            // Animate star rating
+            setTimeout(() => {
+                const starContainer = document.getElementById('star-rating');
+                starContainer.innerHTML = '';
+                
+                for (let i = 0; i < 5; i++) {
+                    const star = document.createElement('span');
+                    star.className = 'text-3xl star-animate';
+                    star.style.animationDelay = `${i * 0.15}s`;
+                    
+                    if (i < stars) {
+                        star.textContent = '⭐';
+                    } else {
+                        star.textContent = '☆';
+                        star.classList.add('text-gray-600');
+                    }
+                    
+                    starContainer.appendChild(star);
+                }
+            }, 1500);
+            
+            // Play victory sound
+            setTimeout(() => {
+                AudioEngine.playSuccess();
+            }, 500);
+        }
+        
+        // Typing effect function
+        function typeEffect(element, text, callback) {
+            let i = 0;
+            element.textContent = "";
+            element.classList.add('typing-cursor');
+            
+            const interval = setInterval(() => {
+                element.textContent += text[i];
+                i++;
+                
+                // Play subtle tick sound
+                if (AudioEngine.ctx && AudioEngine.enabled && i % 2 === 0) {
+                    AudioEngine.resume();
+                    const osc = AudioEngine.ctx.createOscillator();
+                    const gain = AudioEngine.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = 800 + Math.random() * 200;
+                    gain.gain.setValueAtTime(0.05, AudioEngine.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, AudioEngine.ctx.currentTime + 0.05);
+                    osc.connect(gain);
+                    gain.connect(AudioEngine.ctx.destination);
+                    osc.start();
+                    osc.stop(AudioEngine.ctx.currentTime + 0.05);
+                }
+                
+                if (i >= text.length) {
+                    clearInterval(interval);
+                    element.classList.remove('typing-cursor');
+                    if (callback) callback();
+                }
+            }, 80);
+        }
+        
+        // Legacy function for compatibility
+        function showFinalSuccessLegacy() {
             AudioEngine.stopAmbient();
             playerAScreen.classList.add('hidden');
             playerBScreen.classList.add('hidden');
