@@ -42,6 +42,10 @@
             box-shadow: 0 0 20px #ffcc00, 0 0 40px #ffcc0066, inset 0 0 20px #ffcc0033;
         }
         
+        .glow-cyan {
+            box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff66, inset 0 0 20px #00ffff33;
+        }
+        
         .spark {
             animation: spark 0.1s infinite;
         }
@@ -203,179 +207,83 @@
             animation: alertPulse 0.3s ease-in-out infinite;
         }
         
-        /* Ambient glow for emergency */
-        @keyframes emergencyGlow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
+        /* Piston animation */
+        @keyframes pistonMove {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-80px); }
         }
         
-        .emergency-ambient {
-            animation: emergencyGlow 2s ease-in-out infinite;
+        .piston-animate {
+            animation: pistonMove var(--piston-speed, 2s) ease-in-out infinite;
         }
         
-        /* Code display flashing */
-        @keyframes codeFlash {
-            0%, 100% { opacity: 1; text-shadow: 0 0 20px currentColor; }
-            50% { opacity: 0.3; text-shadow: none; }
+        /* Oscilloscope wave */
+        @keyframes waveMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
         
-        .code-flash {
-            animation: codeFlash 0.5s infinite;
+        .wave-animate {
+            animation: waveMove var(--wave-speed, 2s) linear infinite;
         }
         
-        /* Lockdown overlay */
-        @keyframes lockdownPulse {
-            0%, 100% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; }
-            50% { border-color: #ff6600; box-shadow: 0 0 40px #ff6600; }
+        /* Charge button glow */
+        @keyframes chargeGlow {
+            0%, 100% { box-shadow: 0 0 10px #ff6600; }
+            50% { box-shadow: 0 0 30px #ff6600, 0 0 60px #ff660066; }
         }
         
-        .lockdown-border {
-            animation: lockdownPulse 1s infinite;
+        .charge-ready {
+            animation: chargeGlow 0.5s ease-in-out infinite;
         }
         
-        /* Keypad button */
-        .keypad-btn {
-            transition: all 0.1s;
+        /* Radio dial rotation */
+        @keyframes dialSweep {
+            0%, 100% { transform: rotate(-45deg); }
+            50% { transform: rotate(45deg); }
         }
         
-        .keypad-btn:hover {
-            transform: scale(1.1);
-            filter: brightness(1.2);
+        /* Maze cell */
+        .maze-cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #333;
+            transition: all 0.2s;
         }
         
-        .keypad-btn:active {
-            transform: scale(0.95);
+        .maze-cell.player {
+            background: radial-gradient(circle, #00ff00 0%, #008800 100%);
+            box-shadow: 0 0 10px #00ff00;
         }
         
-        /* Reveal animation for keypad */
-        @keyframes revealKeypad {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
+        .maze-cell.wall {
+            background: #333;
         }
         
-        .keypad-reveal {
-            animation: revealKeypad 0.5s ease-out forwards;
+        .maze-cell.exit {
+            background: radial-gradient(circle, #ffcc00 0%, #ff8800 100%);
+            box-shadow: 0 0 10px #ffcc00;
         }
         
-        /* Coffee stain hiding keypad initially */
-        .keypad-coffee-stain {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 12px;
-            background: radial-gradient(ellipse at center,
-                rgba(80, 50, 20, 0.95) 0%,
-                rgba(101, 67, 33, 0.9) 40%,
-                rgba(139, 90, 43, 0.85) 70%,
-                rgba(160, 120, 60, 0.8) 100%);
-            transition: opacity 1s, transform 1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+        .maze-cell.mine {
+            background: radial-gradient(circle, #ff0000 0%, #880000 100%);
         }
         
-        .keypad-coffee-stain.revealed {
-            opacity: 0;
-            transform: scale(0.8);
-            pointer-events: none;
+        /* Level transition */
+        @keyframes levelTransition {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
         }
         
-        /* Screen shake effect */
-        @keyframes screenShake {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            10% { transform: translate(-2px, -1px) rotate(-0.5deg); }
-            20% { transform: translate(2px, 1px) rotate(0.5deg); }
-            30% { transform: translate(-1px, 2px) rotate(-0.5deg); }
-            40% { transform: translate(1px, -1px) rotate(0.5deg); }
-            50% { transform: translate(-2px, 1px) rotate(-0.5deg); }
-            60% { transform: translate(2px, -1px) rotate(0.5deg); }
-            70% { transform: translate(-1px, -2px) rotate(-0.5deg); }
-            80% { transform: translate(1px, 2px) rotate(0.5deg); }
-            90% { transform: translate(-1px, 1px) rotate(-0.5deg); }
-        }
-        
-        .screen-shake {
-            animation: screenShake 0.3s ease-in-out;
-        }
-        
-        /* Critical warning pulsing */
-        @keyframes criticalPulse {
-            0%, 100% { 
-                box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-                border-color: #ef4444;
-            }
-            50% { 
-                box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
-                border-color: #f97316;
-            }
-        }
-        
-        .critical-state {
-            animation: criticalPulse 0.5s ease-in-out infinite;
-        }
-        
-        /* Tension bar glow */
-        #tension-bar {
-            box-shadow: 0 0 10px currentColor;
-        }
-        
-        /* Emergency text flicker */
-        @keyframes textFlicker {
-            0%, 100% { opacity: 1; }
-            92% { opacity: 1; }
-            93% { opacity: 0.3; }
-            94% { opacity: 1; }
-            96% { opacity: 0.5; }
-            97% { opacity: 1; }
-        }
-        
-        .text-flicker {
-            animation: textFlicker 2s infinite;
-        }
-        
-        /* Glitch text effect */
-        @keyframes glitchText {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-        
-        .glitch-text {
-            animation: glitchText 0.3s infinite;
-            color: #ff0000 !important;
-            text-shadow: 2px 0 #00ff00, -2px 0 #0000ff;
-        }
-        
-        /* Corruption overlay for manual */
-        @keyframes staticNoise {
-            0%, 100% { opacity: 0.03; }
-            50% { opacity: 0.08; }
-        }
-        
-        .static-noise {
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 25;
-            animation: staticNoise 0.5s infinite;
-        }
-        
-        /* Pulsing red vignette */
-        .emergency-vignette {
-            background: radial-gradient(ellipse at center, transparent 50%, rgba(139, 0, 0, 0.4) 100%);
-            pointer-events: none;
+        .level-enter {
+            animation: levelTransition 0.5s ease-out forwards;
         }
         
         /* Mobile optimizations */
         @media (max-width: 640px) {
             .manual-page {
                 padding: 1rem;
-                transform: none !important; /* Remove rotation to save space */
+                transform: none !important;
                 margin: 0.5rem;
             }
             
@@ -383,88 +291,9 @@
                 max-height: 180px;
             }
             
-            .manual-page h2 {
-                font-size: 1.25rem;
-            }
-            
-            .manual-page h3 {
-                font-size: 0.9rem;
-            }
-            
-            .manual-page p, .manual-page li {
-                font-size: 0.8rem;
-            }
-            
-            .stamp {
-                font-size: 0.75rem;
-                padding: 0.25rem 0.5rem;
-            }
-            
-            #wire-area {
-                padding: 1rem;
-            }
-            
-            .wire {
-                width: 5rem;
-                height: 2.5rem;
-            }
-            
-            .terminal {
-                width: 3rem;
-                height: 2.5rem;
-            }
-            
-            #main-panel-a {
-                padding: 1rem;
-                margin: 0.5rem;
-            }
-            
-            #security-keypad .grid {
-                gap: 0.25rem;
-            }
-            
-            .keypad-btn {
-                padding: 0.5rem;
-                font-size: 1rem;
-            }
-            
-            /* Fix header on mobile */
-            .title-font.text-6xl {
-                font-size: 2.5rem;
-            }
-            
-            .title-font.text-8xl {
-                font-size: 3rem;
-            }
-        }
-        
-        /* Extra small screens */
-        @media (max-width: 380px) {
-            .manual-page {
-                padding: 0.75rem;
-            }
-            
-            .manual-page svg {
-                max-height: 150px;
-            }
-            
-            .wire {
-                width: 4rem;
-                height: 2rem;
-            }
-            
-            .terminal {
-                width: 2.5rem;
-                height: 2rem;
-                font-size: 0.75rem;
-            }
-        }
-        
-        /* Ensure touch targets are large enough */
-        @media (pointer: coarse) {
-            .wire, .terminal, .keypad-btn {
-                min-height: 44px;
-                min-width: 44px;
+            .maze-cell {
+                width: 30px;
+                height: 30px;
             }
         }
         
@@ -491,7 +320,6 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-            backdrop-filter: blur(5px);
         }
         
         .fs-button:hover {
@@ -500,87 +328,109 @@
             transform: scale(1.1);
         }
         
-        .fs-button:active {
-            transform: scale(0.95);
+        /* Success animations */
+        @keyframes stabilize {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
         }
         
-        /* Hide fullscreen button if already in fullscreen */
-        :fullscreen .fs-button {
-            bottom: 10px;
-            right: 10px;
-            opacity: 0.5;
+        .stabilize-animation {
+            animation: stabilize 1s ease-out forwards;
         }
         
-        :fullscreen .fs-button:hover {
-            opacity: 1;
+        @keyframes greenPulse {
+            0%, 100% { box-shadow: 0 0 50px rgba(34, 197, 94, 0.5); }
+            50% { box-shadow: 0 0 100px rgba(34, 197, 94, 0.8); }
         }
         
-        /* Extra bottom padding for player screens on mobile */
-        @media (max-width: 640px) {
-            #player-a-screen, #player-b-screen {
-                padding-bottom: 80px !important;
-            }
+        .green-pulse {
+            animation: greenPulse 2s ease-in-out infinite;
+        }
+        
+        /* Terminal occupied indicator */
+        .terminal.occupied::after {
+            content: '✓';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #22c55e;
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Level indicator */
+        .level-badge {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #666;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
         }
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen overflow-y-auto">
-    <!-- Scanline overlay - lower z-index so it doesn't interfere -->
+    <!-- Scanline overlay -->
     <div class="scanline fixed inset-0 z-30 pointer-events-none"></div>
     
-    <!-- Emergency pulsing overlay - The Panic Filter -->
+    <!-- Emergency overlay -->
     <div id="emergency-overlay" class="fixed inset-0 bg-red-900 opacity-0 pointer-events-none z-25 transition-opacity duration-500"></div>
     
     <!-- Error flash overlay -->
     <div id="error-overlay" class="fixed inset-0 z-45 pointer-events-none"></div>
     
-    <!-- Alert popup for Player B -->
+    <!-- Alert popup -->
     <div id="alert-popup" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-900 border-2 border-red-500 px-6 py-3 rounded-lg alert-popup">
         <div class="flex items-center gap-3">
             <span class="text-2xl">⚠️</span>
             <div>
-                <p class="text-red-300 font-bold">¡SOBRECARGA DETECTADA!</p>
-                <p class="text-red-400 text-sm">Conexión incorrecta en el panel</p>
+                <p class="text-red-300 font-bold" id="alert-title">¡ALERTA!</p>
+                <p class="text-red-400 text-sm" id="alert-message">Error detectado</p>
             </div>
         </div>
     </div>
     
-    <!-- Lockdown alert for Player B -->
-    <div id="lockdown-alert" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-900 border-2 border-yellow-500 px-6 py-3 rounded-lg">
-        <div class="flex items-center gap-3">
-            <span class="text-2xl">🔒</span>
-            <div>
-                <p class="text-yellow-300 font-bold">¡SISTEMA BLOQUEADO!</p>
-                <p class="text-yellow-400 text-sm">Protocolo de seguridad activado - Usa el teclado</p>
-            </div>
+    <!-- Level transition overlay -->
+    <div id="level-transition" class="hidden fixed inset-0 z-60 bg-black flex items-center justify-center">
+        <div class="text-center">
+            <div class="text-6xl mb-4" id="level-icon">🔧</div>
+            <h2 class="title-font text-4xl text-white mb-2" id="level-title">NIVEL 1</h2>
+            <p class="text-gray-400" id="level-subtitle">El Panel Eléctrico</p>
         </div>
     </div>
     
     <!-- LOBBY SCREEN -->
     <div id="lobby-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="text-center">
-            <!-- Logo -->
             <div class="mb-8">
                 <h1 class="title-font text-6xl md:text-8xl font-black text-red-500 glow-red tracking-wider flicker">
                     EL BÚNKER
                 </h1>
                 <p class="text-gray-400 mt-4 text-lg tracking-widest">JUEGO COOPERATIVO ASIMÉTRICO</p>
+                <p class="text-yellow-500 mt-2 text-sm">4 NIVELES DE ESCAPE</p>
             </div>
             
-            <!-- Main panel -->
             <div class="bg-gray-800 border-2 border-gray-600 rounded-lg p-8 max-w-md mx-auto">
                 <div class="space-y-6">
-                    <!-- Status indicator -->
                     <div id="lobby-status" class="flex items-center justify-center gap-3 text-gray-400">
                         <div class="w-3 h-3 bg-green-500 rounded-full pulse"></div>
                         <span>SISTEMA OPERATIVO</span>
                     </div>
                     
-                    <!-- Create game button -->
                     <button id="create-btn" class="w-full bg-red-600 hover:bg-red-500 text-white py-4 px-8 rounded border-2 border-red-400 glow-red transition-all hover:scale-105 title-font text-xl tracking-wider">
                         ⚡ CREAR PARTIDA
                     </button>
                     
-                    <!-- Game link section (hidden initially) -->
                     <div id="link-section" class="hidden space-y-4">
                         <div class="bg-gray-900 p-4 rounded border border-gray-600">
                             <p class="text-gray-400 text-sm mb-2">ENLACE DE INVITACIÓN:</p>
@@ -596,7 +446,6 @@
                         </div>
                     </div>
                     
-                    <!-- Join section -->
                     <div id="join-section" class="hidden">
                         <div class="bg-green-900/30 border border-green-500 p-4 rounded">
                             <p class="text-green-400 mb-3">🔗 Partida encontrada</p>
@@ -606,29 +455,44 @@
                         </div>
                     </div>
                     
-                    <!-- Connection error -->
                     <div id="connection-error" class="hidden bg-red-900/30 border border-red-500 p-4 rounded">
                         <p class="text-red-400">❌ Error de conexión. Intenta de nuevo.</p>
                     </div>
                 </div>
             </div>
             
-            <!-- Instructions -->
-            <div class="mt-8 text-gray-500 text-sm max-w-lg mx-auto">
-                <p class="mb-2">🎮 Un jugador verá los <span class="text-red-400">MECANISMOS</span></p>
-                <p class="mb-2">📖 El otro verá el <span class="text-yellow-400">MANUAL</span></p>
-                <p class="mb-2">🗣️ Deben <span class="text-green-400">COMUNICARSE</span> para escapar</p>
-                <p class="mt-4 text-xs text-gray-600">🌐 Funciona en dispositivos diferentes - ¡envía el link a un amigo!</p>
+            <!-- Level preview -->
+            <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
+                <div class="bg-gray-800/50 p-3 rounded border border-gray-700">
+                    <div class="text-2xl mb-1">🔌</div>
+                    <p class="text-xs text-gray-400">Nivel 1</p>
+                    <p class="text-yellow-400 text-sm">Panel Eléctrico</p>
+                </div>
+                <div class="bg-gray-800/50 p-3 rounded border border-gray-700">
+                    <div class="text-2xl mb-1">⚛️</div>
+                    <p class="text-xs text-gray-400">Nivel 2</p>
+                    <p class="text-orange-400 text-sm">El Reactor</p>
+                </div>
+                <div class="bg-gray-800/50 p-3 rounded border border-gray-700">
+                    <div class="text-2xl mb-1">📻</div>
+                    <p class="text-xs text-gray-400">Nivel 3</p>
+                    <p class="text-cyan-400 text-sm">Radio</p>
+                </div>
+                <div class="bg-gray-800/50 p-3 rounded border border-gray-700">
+                    <div class="text-2xl mb-1">🗺️</div>
+                    <p class="text-xs text-gray-400">Nivel 4</p>
+                    <p class="text-purple-400 text-sm">Laberinto</p>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- PLAYER A SCREEN - MECHANISMS -->
+    <!-- ==================== PLAYER A SCREENS ==================== -->
     <div id="player-a-screen" class="hidden min-h-screen h-auto bg-gray-900 relative overflow-y-auto">
-        <!-- Emergency ambient glow -->
-        <div id="emergency-glow" class="absolute inset-0 bg-red-900/20 emergency-ambient pointer-events-none"></div>
+        <!-- Emergency glow -->
+        <div id="emergency-glow" class="absolute inset-0 bg-red-900/20 opacity-0 pointer-events-none transition-opacity"></div>
         
-        <!-- Background bunker -->
+        <!-- Background -->
         <div class="absolute inset-0 bg-gradient-to-b from-gray-800 to-gray-900">
             <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><rect fill=\"none\" stroke=\"%23666\" stroke-width=\"0.5\" width=\"100\" height=\"100\"/></svg>');"></div>
         </div>
@@ -638,45 +502,38 @@
             <div class="flex items-center gap-4">
                 <div class="w-3 h-3 bg-red-500 rounded-full spark"></div>
                 <span class="text-red-400 title-font">OPERADOR</span>
-                <span id="phase-indicator-a" class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-400">FASE 1</span>
+                <span id="level-indicator-a" class="text-xs bg-yellow-700 px-2 py-1 rounded text-yellow-300">NIVEL 1</span>
             </div>
             <div class="flex items-center gap-4">
-                <button id="sound-toggle-a" class="text-gray-400 hover:text-white transition-all" title="Sonido">
-                    🔊
-                </button>
+                <button id="sound-toggle-a" class="text-gray-400 hover:text-white transition-all" title="Sonido">🔊</button>
                 <span id="connection-status-a" class="text-yellow-400">● Conectando...</span>
             </div>
         </div>
         
-        <!-- Main panel area -->
-        <div class="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+        <!-- LEVEL 1: WIRES -->
+        <div id="level-1-a" class="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
             <div id="main-panel-a" class="bg-gray-800 border-4 border-gray-600 rounded-lg p-8 max-w-2xl w-full shadow-2xl">
-                <!-- Panel title -->
                 <div class="text-center mb-6">
                     <h2 class="title-font text-2xl text-yellow-500">⚠️ PANEL ELÉCTRICO DAÑADO</h2>
                     <p class="text-gray-400 text-sm mt-2">Conecta los cables correctamente para abrir la puerta</p>
                 </div>
                 
-                <!-- Sparks animation -->
                 <div id="sparks" class="absolute top-20 right-20 text-4xl spark">⚡</div>
                 
-                <!-- Lockdown code display (hidden initially) -->
-                <div id="lockdown-display" class="hidden mb-6 bg-black rounded-lg p-4 border-4 border-red-600 lockdown-border">
+                <!-- Lockdown display -->
+                <div id="lockdown-display" class="hidden mb-6 bg-black rounded-lg p-4 border-4 border-red-600">
                     <div class="text-center">
-                        <p class="text-red-500 text-xs mb-2 title-font">⚠️ SISTEMA BLOQUEADO - COMUNICA ESTE CÓDIGO</p>
-                        <div id="lockdown-code" class="text-4xl title-font text-yellow-400 code-flash tracking-widest">
-                            ----
-                        </div>
-                        <p class="text-gray-500 text-xs mt-2">El técnico debe ingresar el código para continuar</p>
+                        <p class="text-red-500 text-xs mb-2 title-font">⚠️ SISTEMA BLOQUEADO</p>
+                        <div id="lockdown-code" class="text-4xl title-font text-yellow-400 tracking-widest">----</div>
+                        <p class="text-gray-500 text-xs mt-2">El técnico debe ingresar el código</p>
                     </div>
                 </div>
                 
-                <!-- Wire connection area -->
+                <!-- Wire area -->
                 <div id="wire-area" class="relative bg-gray-900 rounded-lg p-6 border-2 border-gray-700">
                     <svg id="connection-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
                     
                     <div class="flex justify-between items-center">
-                        <!-- Wires (left side) -->
                         <div class="space-y-4">
                             <p class="text-gray-500 text-xs mb-4 text-center">CABLES</p>
                             <div id="wire-red" class="wire w-24 h-12 bg-gradient-to-r from-red-700 to-red-500 rounded-r-full border-2 border-red-400 flex items-center justify-end pr-3 cursor-pointer" data-color="red">
@@ -693,26 +550,16 @@
                             </div>
                         </div>
                         
-                        <!-- Terminals (right side) -->
                         <div class="space-y-4">
                             <p class="text-gray-500 text-xs mb-4 text-center">BORNES</p>
-                            <div id="terminal-1" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="1">
-                                1
-                            </div>
-                            <div id="terminal-2" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="2">
-                                2
-                            </div>
-                            <div id="terminal-3" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="3">
-                                3
-                            </div>
-                            <div id="terminal-4" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="4">
-                                4
-                            </div>
+                            <div id="terminal-1" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600 relative" data-terminal="1">1</div>
+                            <div id="terminal-2" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600 relative" data-terminal="2">2</div>
+                            <div id="terminal-3" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600 relative" data-terminal="3">3</div>
+                            <div id="terminal-4" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600 relative" data-terminal="4">4</div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Current connections display -->
                 <div id="connections-display" class="mt-6 grid grid-cols-2 gap-2 text-sm">
                     <div class="bg-gray-900 p-2 rounded border border-gray-700 text-gray-500">
                         <span class="text-red-400">●</span> Rojo → <span id="red-conn">---</span>
@@ -728,90 +575,199 @@
                     </div>
                 </div>
                 
-                <!-- Error counter -->
                 <div id="error-counter" class="mt-4 text-center text-gray-500 text-sm">
-                    Errores: <span id="error-count" class="text-red-400">0</span>
+                    Errores: <span id="error-count">0</span>
                 </div>
                 
-                <!-- Tension meter (appears during emergency) -->
-                <div id="tension-meter" class="hidden mt-4">
-                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
-                        <span>⚡ INESTABILIDAD DEL SISTEMA</span>
-                        <span id="tension-time" class="text-red-400">00:00</span>
-                    </div>
-                    <div class="h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-700">
-                        <div id="tension-bar" class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                    <p id="tension-warning" class="text-center text-xs mt-1 text-gray-500">Sistema estable</p>
-                </div>
-                
-                <!-- Reset button -->
                 <button id="reset-wires" class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-gray-300 py-2 rounded border border-gray-600 transition-all">
                     🔄 Reiniciar conexiones
                 </button>
             </div>
         </div>
         
-        <!-- Door overlay (shown when solved) -->
-        <div id="door-a" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80">
-            <div class="relative w-80 h-96">
-                <div id="door-left-a" class="absolute left-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
-                <div id="door-right-a" class="absolute right-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center">
-                        <div class="text-6xl mb-4">🚪</div>
-                        <p class="text-green-400 title-font text-xl">¡PUERTA ABIERTA!</p>
+        <!-- LEVEL 2: REACTOR -->
+        <div id="level-2-a" class="hidden relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+            <div class="bg-gray-800 border-4 border-orange-600 rounded-lg p-8 max-w-2xl w-full shadow-2xl glow-yellow">
+                <div class="text-center mb-6">
+                    <h2 class="title-font text-2xl text-orange-500">⚛️ REACTOR DE FUSIÓN</h2>
+                    <p class="text-gray-400 text-sm mt-2">Presiona CARGA cuando el técnico diga "¡YA!"</p>
+                </div>
+                
+                <!-- Reactor visualization -->
+                <div class="bg-gray-900 rounded-lg p-6 border-2 border-orange-700 mb-6">
+                    <div class="relative h-48 flex items-end justify-center">
+                        <!-- Reactor core -->
+                        <div class="absolute bottom-0 w-32 h-8 bg-orange-900 rounded-t-lg"></div>
+                        
+                        <!-- Piston container -->
+                        <div class="absolute bottom-8 w-24 h-32 bg-gray-700 rounded-t-lg border-2 border-gray-600 overflow-hidden">
+                            <!-- Piston -->
+                            <div id="reactor-piston" class="absolute bottom-0 w-full h-16 bg-gradient-to-t from-orange-600 to-yellow-500 piston-animate">
+                                <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white rounded-full"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Energy indicator -->
+                        <div class="absolute top-0 right-4 text-center">
+                            <p class="text-xs text-gray-500">ENERGÍA</p>
+                            <div id="energy-bar" class="w-8 h-24 bg-gray-700 rounded border border-gray-600 mt-1 overflow-hidden">
+                                <div id="energy-level" class="absolute bottom-0 w-full bg-gradient-to-t from-green-500 to-green-300 transition-all" style="height: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cycle counter -->
+                        <div class="absolute top-0 left-4 text-center">
+                            <p class="text-xs text-gray-500">CICLOS</p>
+                            <p id="cycle-count" class="text-2xl title-font text-orange-400">0/5</p>
+                        </div>
                     </div>
+                </div>
+                
+                <!-- Charge button -->
+                <button id="charge-btn" class="w-full bg-orange-600 hover:bg-orange-500 text-white py-6 rounded-lg border-4 border-orange-400 title-font text-2xl transition-all active:scale-95">
+                    ⚡ CARGA ⚡
+                </button>
+                
+                <!-- Timing feedback -->
+                <div id="timing-feedback" class="mt-4 text-center text-gray-500">
+                    Espera la señal del técnico...
+                </div>
+                
+                <!-- Overheat warning -->
+                <div id="overheat-warning" class="hidden mt-4 bg-red-900/50 border-2 border-red-500 rounded-lg p-3">
+                    <p class="text-red-400 text-center">🔥 ¡SOBRECALENTAMIENTO! Fallos: <span id="reactor-fails">0</span>/3</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LEVEL 3: RADIO -->
+        <div id="level-3-a" class="hidden relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+            <div class="bg-gray-800 border-4 border-cyan-600 rounded-lg p-8 max-w-2xl w-full shadow-2xl glow-cyan">
+                <div class="text-center mb-6">
+                    <h2 class="title-font text-2xl text-cyan-500">📻 FRECUENCIA DE EMERGENCIA</h2>
+                    <p class="text-gray-400 text-sm mt-2">Escucha el código y descríbelo al técnico</p>
+                </div>
+                
+                <!-- Radio display -->
+                <div class="bg-gray-900 rounded-lg p-6 border-2 border-cyan-700 mb-6">
+                    <!-- Frequency dial -->
+                    <div class="flex justify-center mb-6">
+                        <div class="relative w-48 h-48 bg-gray-800 rounded-full border-4 border-cyan-600">
+                            <div class="absolute inset-4 bg-gray-900 rounded-full border-2 border-gray-700 flex items-center justify-center">
+                                <div id="radio-dial" class="w-1 h-16 bg-cyan-400 origin-bottom transform -rotate-45"></div>
+                            </div>
+                            <!-- Frequency markers -->
+                            <div class="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">108</div>
+                            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">88</div>
+                            <div class="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">92</div>
+                            <div class="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">104</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current pattern display -->
+                    <div class="bg-black rounded-lg p-4 mb-4">
+                        <p class="text-xs text-gray-500 mb-2 text-center">PATRÓN ACTUAL</p>
+                        <div id="pattern-visual" class="flex justify-center gap-2 h-8">
+                            <!-- Pattern dots will appear here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Play button -->
+                    <button id="play-pattern-btn" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-4 rounded border-2 border-cyan-400 title-font text-xl mb-4">
+                        🔊 REPRODUCIR SEÑAL
+                    </button>
+                    
+                    <!-- Switches -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="radio-switch bg-gray-700 hover:bg-gray-600 text-white py-3 rounded border border-gray-600" data-switch="oxygen">
+                            💨 OXÍGENO
+                        </button>
+                        <button class="radio-switch bg-gray-700 hover:bg-gray-600 text-white py-3 rounded border border-gray-600" data-switch="door">
+                            🚪 PUERTA
+                        </button>
+                        <button class="radio-switch bg-gray-700 hover:bg-gray-600 text-white py-3 rounded border border-gray-600" data-switch="power">
+                            ⚡ ENERGÍA
+                        </button>
+                        <button class="radio-switch bg-gray-700 hover:bg-gray-600 text-white py-3 rounded border border-gray-600" data-switch="vent">
+                            🌀 VENTILACIÓN
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Progress -->
+                <div class="text-center text-gray-400">
+                    Señales decodificadas: <span id="signals-decoded">0</span>/4
+                </div>
+            </div>
+        </div>
+        
+        <!-- LEVEL 4: MAZE -->
+        <div id="level-4-a" class="hidden relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+            <div class="bg-gray-800 border-4 border-purple-600 rounded-lg p-8 max-w-2xl w-full shadow-2xl">
+                <div class="text-center mb-6">
+                    <h2 class="title-font text-2xl text-purple-500">🗺️ TÚNEL DE ESCAPE</h2>
+                    <p class="text-gray-400 text-sm mt-2">El técnico ve el mapa. Tú solo ves tu posición.</p>
+                </div>
+                
+                <!-- Maze grid (player view - no walls) -->
+                <div class="bg-gray-900 rounded-lg p-4 border-2 border-purple-700 mb-6">
+                    <div id="maze-player-view" class="grid gap-1 justify-center" style="grid-template-columns: repeat(7, 40px);">
+                        <!-- Maze cells will be generated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Movement controls -->
+                <div class="grid grid-cols-3 gap-2 max-w-48 mx-auto">
+                    <div></div>
+                    <button class="maze-move bg-purple-600 hover:bg-purple-500 text-white py-4 rounded text-2xl" data-dir="up">↑</button>
+                    <div></div>
+                    <button class="maze-move bg-purple-600 hover:bg-purple-500 text-white py-4 rounded text-2xl" data-dir="left">←</button>
+                    <button class="maze-move bg-gray-700 text-gray-400 py-4 rounded text-xl">●</button>
+                    <button class="maze-move bg-purple-600 hover:bg-purple-500 text-white py-4 rounded text-2xl" data-dir="right">→</button>
+                    <div></div>
+                    <button class="maze-move bg-purple-600 hover:bg-purple-500 text-white py-4 rounded text-2xl" data-dir="down">↓</button>
+                    <div></div>
+                </div>
+                
+                <!-- Position display -->
+                <div class="mt-4 text-center text-gray-500">
+                    Posición: <span id="player-pos" class="text-purple-400">(1, 1)</span>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- PLAYER B SCREEN - MANUAL -->
+    <!-- ==================== PLAYER B SCREENS ==================== -->
     <div id="player-b-screen" class="hidden min-h-screen h-auto bg-amber-900 relative overflow-y-auto pb-8">
-        <!-- Desk texture background -->
         <div class="absolute inset-0 bg-gradient-to-br from-amber-800 to-amber-950"></div>
-        
-        <!-- Power failure overlay -->
-        <div id="power-failure-overlay" class="absolute inset-0 bg-black pointer-events-none z-20 transition-opacity duration-2000" style="opacity: 0;"></div>
         
         <!-- Header -->
         <div class="relative z-10 p-4 flex justify-between items-center border-b border-amber-700 bg-amber-800/80">
             <div class="flex items-center gap-4">
                 <div class="w-3 h-3 bg-green-500 rounded-full pulse"></div>
                 <span class="text-amber-200 title-font">TÉCNICO</span>
-                <span id="phase-indicator-b" class="text-xs bg-amber-700 px-2 py-1 rounded text-amber-300">FASE 1</span>
+                <span id="level-indicator-b" class="text-xs bg-yellow-700 px-2 py-1 rounded text-yellow-300">NIVEL 1</span>
             </div>
             <div class="flex items-center gap-4">
-                <button id="sound-toggle-b" class="text-amber-300 hover:text-white transition-all" title="Sonido">
-                    🔊
-                </button>
+                <button id="sound-toggle-b" class="text-amber-300 hover:text-white transition-all" title="Sonido">🔊</button>
                 <span id="connection-status-b" class="text-yellow-400">● Conectando...</span>
             </div>
         </div>
         
-        <!-- Manual content -->
-        <div class="relative z-10 p-8 flex justify-center">
+        <!-- LEVEL 1: MANUAL -->
+        <div id="level-1-b" class="relative z-10 p-8 flex justify-center">
             <div id="manual-page" class="manual-page rounded-lg p-8 max-w-2xl w-full transform rotate-1 relative">
                 <!-- Coffee stains -->
                 <div class="coffee-stain" style="width: 120px; height: 100px; top: 60px; right: 80px;"></div>
                 <div class="coffee-stain" style="width: 80px; height: 70px; bottom: 200px; left: 40px;"></div>
-                <div class="coffee-stain" style="width: 60px; height: 50px; top: 300px; right: 150px;"></div>
                 
-                <!-- Burn marks -->
-                <div class="burn-mark" style="width: 100px; height: 40px; top: 420px; left: 120px; transform: rotate(-10deg);"></div>
-                <div class="burn-mark" style="width: 70px; height: 30px; bottom: 320px; right: 100px; transform: rotate(5deg);"></div>
-                
-                <!-- Confidential stamp -->
                 <div class="stamp absolute top-4 right-4 border-4 border-red-700 text-red-700 px-4 py-2 font-bold text-xl rounded z-20">
                     CONFIDENCIAL
                 </div>
                 
-                <!-- Manual header -->
                 <div class="text-center mb-8 border-b-2 border-amber-700 pb-4 relative z-10">
                     <h2 class="title-font text-3xl text-gray-800">📋 MANUAL TÉCNICO</h2>
-                    <p class="text-gray-600 mt-2">Sistema Eléctrico del Búnker - Sección 7B</p>
-                    <p class="text-red-700 text-sm mt-1">⚠️ NO COMPARTIR CON PERSONAL NO AUTORIZADO</p>
+                    <p class="text-gray-600 mt-2">Sistema Eléctrico - Sección 7B</p>
                 </div>
                 
                 <!-- Diagram -->
@@ -819,45 +775,31 @@
                     <h3 class="text-gray-800 font-bold mb-4 text-center">DIAGRAMA DE CONEXIONES</h3>
                     
                     <svg viewBox="0 0 400 250" class="w-full max-w-md mx-auto">
-                        <!-- Background grid -->
                         <defs>
                             <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
                                 <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ddd" stroke-width="0.5"/>
                             </pattern>
-                            <!-- Coffee stain filter -->
-                            <filter id="stain1" x="-20%" y="-20%" width="140%" height="140%">
-                                <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
-                            </filter>
                         </defs>
                         <rect width="400" height="250" fill="url(#grid)"/>
                         
-                        <!-- Simulated damage/stain on diagram -->
-                        <ellipse cx="280" cy="130" rx="45" ry="35" fill="rgba(101, 67, 33, 0.25)" filter="url(#stain1)"/>
-                        
-                        <!-- Power source -->
                         <rect x="20" y="100" width="60" height="50" fill="#333" stroke="#000" stroke-width="2"/>
                         <text x="50" y="130" text-anchor="middle" fill="white" font-size="12">FUENTE</text>
-                        <text x="50" y="145" text-anchor="middle" fill="yellow" font-size="10">220V</text>
                         
-                        <!-- Wires coming out -->
                         <line x1="80" y1="105" x2="150" y2="40" stroke="red" stroke-width="4"/>
                         <line x1="80" y1="115" x2="150" y2="90" stroke="blue" stroke-width="4"/>
                         <line x1="80" y1="135" x2="150" y2="160" stroke="green" stroke-width="4"/>
                         <line x1="80" y1="145" x2="150" y2="210" stroke="yellow" stroke-width="4"/>
                         
-                        <!-- Connection points labels -->
                         <circle cx="150" cy="40" r="10" fill="red" stroke="#800" stroke-width="2"/>
                         <circle cx="150" cy="90" r="10" fill="blue" stroke="#008" stroke-width="2"/>
                         <circle cx="150" cy="160" r="10" fill="green" stroke="#080" stroke-width="2"/>
                         <circle cx="150" cy="210" r="10" fill="yellow" stroke="#880" stroke-width="2"/>
                         
-                        <!-- Arrows and terminal connections -->
-                        <path d="M 165 40 L 250 40" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+                        <path d="M 165 40 L 250 40" stroke="#333" stroke-width="2"/>
                         <path d="M 165 90 L 250 160" stroke="#333" stroke-width="2"/>
                         <path d="M 165 160 L 250 90" stroke="#333" stroke-width="2"/>
                         <path d="M 165 210 L 250 210" stroke="#333" stroke-width="2"/>
                         
-                        <!-- Terminals -->
                         <rect x="250" y="25" width="50" height="30" fill="#555" stroke="#333" stroke-width="2" rx="5"/>
                         <text x="275" y="45" text-anchor="middle" fill="white" font-weight="bold">1</text>
                         
@@ -869,54 +811,24 @@
                         
                         <rect x="250" y="195" width="50" height="30" fill="#555" stroke="#333" stroke-width="2" rx="5"/>
                         <text x="275" y="215" text-anchor="middle" fill="white" font-weight="bold">4</text>
-                        
-                        <!-- Voltage annotations (some obscured) -->
-                        <text x="320" y="45" fill="#c00" font-size="11" font-weight="bold">55V ⚡</text>
-                        <text x="320" y="95" fill="#c00" font-size="11" font-weight="bold">1̶1̶0̶V̶ ⚡</text>
-                        <text x="320" y="165" fill="#c00" font-size="11" font-weight="bold">165V ⚡</text>
-                        <text x="320" y="215" fill="#c00" font-size="11" font-weight="bold">2̶2̶0̶V̶ ⚡</text>
                     </svg>
-                    
-                    <p class="text-center text-gray-500 text-xs mt-2 italic">* Algunos valores pueden estar dañados por exposición al fuego</p>
                 </div>
                 
                 <!-- Instructions -->
                 <div class="bg-amber-100 rounded-lg p-4 border-2 border-amber-400 mb-6 relative z-10">
-                    <h3 class="text-gray-800 font-bold mb-3">📝 INSTRUCCIONES DE CONEXIÓN:</h3>
+                    <h3 class="text-gray-800 font-bold mb-3">📝 INSTRUCCIONES:</h3>
                     <ul class="text-gray-700 space-y-2 text-sm">
-                        <li>• El cable <span class="font-bold text-red-600">ROJO</span> debe conectarse al borne <span class="font-bold">1</span> (55V)</li>
-                        <li>• El cable <span class="font-bold text-blue-600">AZUL</span> debe conectarse al borne <span class="font-bold">3</span> (voltaje <span class="bg-amber-800/30 px-1">ilegible</span>)</li>
-                        <li>• El cable <span class="font-bold text-green-600">VERDE</span> debe conectarse al borne <span class="font-bold">2</span> (<span class="bg-amber-800/30 px-1">pa̶r̶c̶i̶a̶l̶</span>)</li>
-                        <li>• El cable <span class="font-bold text-yellow-600">AMARILLO</span> debe conectarse al borne <span class="font-bold">4</span> (máx. voltaje)</li>
+                        <li>• <span class="font-bold text-red-600">ROJO</span> → borne <span class="font-bold">1</span></li>
+                        <li>• <span class="font-bold text-blue-600">AZUL</span> → borne <span class="font-bold">3</span></li>
+                        <li>• <span class="font-bold text-green-600">VERDE</span> → borne <span class="font-bold">2</span></li>
+                        <li>• <span class="font-bold text-yellow-600">AMARILLO</span> → borne <span class="font-bold">4</span></li>
                     </ul>
                 </div>
                 
-                <!-- Warning -->
-                <div class="bg-red-100 rounded-lg p-4 border-2 border-red-400 relative z-10">
-                    <p class="text-red-800 text-sm">
-                        <span class="font-bold">⚠️ ADVERTENCIA:</span> Una conexión incorrecta causará un cortocircuito y activará la alarma de emergencia. 
-                        Comunique claramente las instrucciones al operador del panel.
-                    </p>
-                </div>
-                
-                <!-- Handwritten note -->
-                <div class="mt-4 bg-yellow-200 p-3 rounded shadow-md transform -rotate-2 relative z-10" style="font-family: 'Comic Sans MS', cursive;">
-                    <p class="text-gray-800 text-sm">Nota: Si las chispas aumentan, ¡van por buen camino! - J.M.</p>
-                </div>
-                
-                <!-- Security Keypad Section (hidden under coffee stain) -->
+                <!-- Keypad -->
                 <div id="security-keypad-container" class="hidden mt-6 relative z-10">
-                    <div id="security-keypad" class="bg-gray-900 rounded-lg p-4 border-2 border-red-500 relative overflow-hidden">
-                        <!-- Coffee stain covering keypad -->
-                        <div id="keypad-coffee-stain" class="keypad-coffee-stain z-30">
-                            <div class="text-center">
-                                <p class="text-amber-200/60 text-xs">☕ Mancha sospechosa...</p>
-                                <p class="text-amber-100/40 text-xs mt-1">Toca para limpiar</p>
-                            </div>
-                        </div>
-                        
+                    <div id="security-keypad" class="bg-gray-900 rounded-lg p-4 border-2 border-red-500">
                         <p class="text-red-500 text-xs mb-3 text-center title-font">🔒 PROTOCOLO DE REINICIO</p>
-                        <p class="text-gray-400 text-xs mb-3 text-center">Solicita el código al operador del panel</p>
                         
                         <div id="keypad-display" class="w-full bg-black text-green-500 text-center font-bold text-2xl py-3 rounded mb-3 title-font tracking-widest border border-green-900">
                             ----
@@ -936,12 +848,10 @@
                             <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="0">0</button>
                             <button class="keypad-btn bg-green-700 hover:bg-green-600 text-white py-3 rounded font-bold text-xl" data-num="enter">✓</button>
                         </div>
-                        
-                        <p id="keypad-status" class="text-center text-gray-500 text-xs mt-3">Esperando código...</p>
                     </div>
                 </div>
                 
-                <!-- Live status from Player A -->
+                <!-- Live status -->
                 <div class="mt-6 bg-gray-800 rounded-lg p-4 border-2 border-gray-600 relative z-10">
                     <h3 class="text-green-400 font-bold mb-3">📡 ESTADO EN TIEMPO REAL:</h3>
                     <div id="live-status" class="grid grid-cols-2 gap-2 text-sm">
@@ -958,53 +868,231 @@
                             <span class="text-yellow-400">●</span> Amarillo → <span id="live-yellow">---</span>
                         </div>
                     </div>
-                    <div id="progress-indicator" class="mt-3 text-center text-gray-400">
-                        Conexiones correctas: <span id="correct-count">0</span>/4
-                    </div>
-                    <div id="error-display-b" class="mt-2 text-center text-red-400 text-sm">
-                        Errores detectados: <span id="error-count-b">0</span>
-                    </div>
-                    <div id="lockdown-status-b" class="hidden mt-2 text-center text-yellow-400 text-sm">
-                        🔒 Sistema bloqueado - Ingresa el código
+                    <div class="mt-3 text-center text-gray-400">
+                        Correctas: <span id="correct-count">0</span>/4
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Door overlay (shown when solved) -->
-        <div id="door-b" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80">
-            <div class="relative w-80 h-96">
-                <div id="door-left-b" class="absolute left-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
-                <div id="door-right-b" class="absolute right-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center">
-                        <div class="text-6xl mb-4">🚪</div>
-                        <p class="text-green-400 title-font text-xl">¡PUERTA ABIERTA!</p>
-                        <p class="text-white mt-4">¡Lo lograron juntos!</p>
+        <!-- LEVEL 2: OSCILLOSCOPE -->
+        <div id="level-2-b" class="hidden relative z-10 p-8 flex justify-center">
+            <div class="manual-page rounded-lg p-8 max-w-2xl w-full relative">
+                <div class="text-center mb-6 border-b-2 border-amber-700 pb-4">
+                    <h2 class="title-font text-3xl text-gray-800">📊 MONITOR DE REACTOR</h2>
+                    <p class="text-gray-600 mt-2">Guía de Sincronización</p>
+                </div>
+                
+                <!-- Oscilloscope -->
+                <div class="bg-gray-900 rounded-lg p-4 border-2 border-orange-600 mb-6">
+                    <p class="text-orange-400 text-xs mb-2 text-center">OSCILOSCOPIO</p>
+                    <div class="relative h-32 bg-black rounded overflow-hidden">
+                        <!-- Grid -->
+                        <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"40\"><rect fill=\"none\" stroke=\"%23333\" stroke-width=\"0.5\" width=\"40\" height=\"40\"/></svg>');"></div>
+                        
+                        <!-- Wave -->
+                        <svg id="oscilloscope-wave" class="absolute inset-0 w-[200%] h-full wave-animate" viewBox="0 0 800 100" preserveAspectRatio="none">
+                            <path d="M 0 50 Q 50 0, 100 50 Q 150 100, 200 50 Q 250 0, 300 50 Q 350 100, 400 50 Q 450 0, 500 50 Q 550 100, 600 50 Q 650 0, 700 50 Q 750 100, 800 50" 
+                                  fill="none" stroke="#00ff00" stroke-width="3"/>
+                        </svg>
+                        
+                        <!-- Peak indicator -->
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs text-green-400">▼ PICO</div>
                     </div>
+                    
+                    <!-- Timing display -->
+                    <div class="mt-4 text-center">
+                        <p class="text-gray-500 text-xs">INTERVALO DE PICO</p>
+                        <p id="peak-interval" class="text-4xl title-font text-orange-400">2.0s</p>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="bg-amber-100 rounded-lg p-4 border-2 border-amber-400 mb-6">
+                    <h3 class="text-gray-800 font-bold mb-3">📝 INSTRUCCIONES:</h3>
+                    <ol class="text-gray-700 space-y-2 text-sm list-decimal list-inside">
+                        <li>Observa el ritmo de la onda</li>
+                        <li>Cuando la onda llegue al <span class="font-bold text-green-600">PICO</span>, di "¡YA!"</li>
+                        <li>El operador debe presionar CARGA en ese momento</li>
+                        <li>Completa <span class="font-bold">5 ciclos</span> exitosos</li>
+                    </ol>
+                </div>
+                
+                <!-- Countdown helper -->
+                <div class="bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
+                    <p class="text-center text-gray-400 mb-2">Contador de ritmo</p>
+                    <div id="rhythm-counter" class="text-center text-6xl title-font text-orange-400">
+                        ●
+                    </div>
+                    <p class="text-center text-gray-500 text-xs mt-2">El punto parpadea con el ritmo</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LEVEL 3: RADIO MANUAL -->
+        <div id="level-3-b" class="hidden relative z-10 p-8 flex justify-center">
+            <div class="manual-page rounded-lg p-8 max-w-2xl w-full relative">
+                <div class="text-center mb-6 border-b-2 border-amber-700 pb-4">
+                    <h2 class="title-font text-3xl text-gray-800">📻 CÓDIGOS DE RADIO</h2>
+                    <p class="text-gray-600 mt-2">Tabla de Traducción Morse</p>
+                </div>
+                
+                <!-- Code table -->
+                <div class="bg-white/80 rounded-lg p-4 border-2 border-cyan-600 mb-6">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b-2 border-gray-400">
+                                <th class="py-2 text-left">PATRÓN</th>
+                                <th class="py-2 text-left">SISTEMA</th>
+                                <th class="py-2 text-left">INTERRUPTOR</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700">
+                            <tr class="border-b border-gray-300">
+                                <td class="py-3 font-mono">● ● ●</td>
+                                <td>Tres cortos</td>
+                                <td class="font-bold text-cyan-600">💨 OXÍGENO</td>
+                            </tr>
+                            <tr class="border-b border-gray-300">
+                                <td class="py-3 font-mono">▬</td>
+                                <td>Un largo</td>
+                                <td class="font-bold text-cyan-600">🚪 PUERTA</td>
+                            </tr>
+                            <tr class="border-b border-gray-300">
+                                <td class="py-3 font-mono">● ▬ ●</td>
+                                <td>Corto-largo-corto</td>
+                                <td class="font-bold text-cyan-600">⚡ ENERGÍA</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 font-mono">▬ ▬</td>
+                                <td>Dos largos</td>
+                                <td class="font-bold text-cyan-600">🌀 VENTILACIÓN</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Tips -->
+                <div class="bg-amber-100 rounded-lg p-4 border-2 border-amber-400 mb-6">
+                    <h3 class="text-gray-800 font-bold mb-2">💡 CONSEJOS:</h3>
+                    <ul class="text-gray-700 text-sm space-y-1">
+                        <li>• "Corto" = pitido breve (●)</li>
+                        <li>• "Largo" = pitido extendido (▬)</li>
+                        <li>• Pide al operador que reproduzca la señal varias veces</li>
+                    </ul>
+                </div>
+                
+                <!-- Current signal status -->
+                <div class="bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
+                    <h3 class="text-cyan-400 font-bold mb-3">📡 SEÑALES RECIBIDAS:</h3>
+                    <div id="signals-status" class="space-y-2 text-sm">
+                        <div class="flex justify-between text-gray-400">
+                            <span>💨 Oxígeno</span>
+                            <span id="signal-oxygen" class="text-red-400">⏳ Pendiente</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400">
+                            <span>🚪 Puerta</span>
+                            <span id="signal-door" class="text-red-400">⏳ Pendiente</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400">
+                            <span>⚡ Energía</span>
+                            <span id="signal-power" class="text-red-400">⏳ Pendiente</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400">
+                            <span>🌀 Ventilación</span>
+                            <span id="signal-vent" class="text-red-400">⏳ Pendiente</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LEVEL 4: MAZE MAP -->
+        <div id="level-4-b" class="hidden relative z-10 p-8 flex justify-center">
+            <div class="manual-page rounded-lg p-8 max-w-2xl w-full relative">
+                <div class="text-center mb-6 border-b-2 border-amber-700 pb-4">
+                    <h2 class="title-font text-3xl text-gray-800">🗺️ MAPA DEL TÚNEL</h2>
+                    <p class="text-gray-600 mt-2">Guía al operador hacia la salida</p>
+                </div>
+                
+                <!-- Maze map (technician view - with walls) -->
+                <div class="bg-gray-900 rounded-lg p-4 border-2 border-purple-600 mb-6">
+                    <div id="maze-tech-view" class="grid gap-1 justify-center" style="grid-template-columns: repeat(7, 40px);">
+                        <!-- Maze cells will be generated by JS -->
+                    </div>
+                    
+                    <!-- Legend -->
+                    <div class="mt-4 flex justify-center gap-4 text-xs">
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-gray-700 border border-gray-600"></div>
+                            <span class="text-gray-400">Muro</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-red-600 rounded-full"></div>
+                            <span class="text-gray-400">Mina</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                            <span class="text-gray-400">Salida</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="bg-amber-100 rounded-lg p-4 border-2 border-amber-400 mb-6">
+                    <h3 class="text-gray-800 font-bold mb-2">📝 INSTRUCCIONES:</h3>
+                    <ul class="text-gray-700 text-sm space-y-1">
+                        <li>• Tú ves el mapa completo, el operador NO</li>
+                        <li>• Guíale: "Sube 2, derecha 1, baja 3..."</li>
+                        <li>• Si toca un muro = error</li>
+                        <li>• Si toca una mina = ¡BOOM!</li>
+                    </ul>
+                </div>
+                
+                <!-- Position tracker -->
+                <div class="bg-gray-800 rounded-lg p-4 border-2 border-gray-600">
+                    <p class="text-center text-gray-400 mb-2">Posición del operador (según sus movimientos):</p>
+                    <p id="tech-pos-display" class="text-center text-2xl title-font text-purple-400">(?, ?)</p>
+                    <p class="text-center text-gray-500 text-xs mt-2">No puedes ver su posición directamente</p>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- SUCCESS SCREEN -->
-    <div id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div class="text-center">
-            <div class="text-8xl mb-8">🎉</div>
-            <h1 class="title-font text-5xl text-green-400 glow-green mb-4">¡ESCAPARON!</h1>
-            <p class="text-gray-300 text-xl mb-4">Han completado El Búnker trabajando en equipo</p>
-            <p id="stats-display" class="text-gray-500 mb-4">Errores cometidos: <span id="final-errors">0</span></p>
-            <p id="time-display" class="text-gray-500 mb-8">Tiempo de escape: <span id="final-time">00:00</span></p>
-            <button onclick="location.reload()" class="bg-green-600 hover:bg-green-500 text-white py-4 px-8 rounded-lg title-font text-xl transition-all hover:scale-105">
+    <div id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black overflow-hidden">
+        <div id="success-bg" class="absolute inset-0 green-pulse"></div>
+        
+        <div class="text-center relative z-10">
+            <div id="success-icon" class="text-8xl mb-6 stabilize-animation">🏆</div>
+            
+            <h1 class="title-font text-4xl md:text-6xl text-green-400 glow-green mb-4">
+                ¡BÚNKER ESCAPADO!
+            </h1>
+            
+            <p class="text-green-300 text-xl mb-6">Todos los niveles completados</p>
+            
+            <div class="bg-gray-900/80 border-2 border-green-500 rounded-lg p-6 mb-6 max-w-md mx-auto">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-black/50 p-3 rounded">
+                        <p class="text-gray-500">Errores totales</p>
+                        <p id="final-errors" class="text-2xl text-white title-font">0</p>
+                    </div>
+                    <div class="bg-black/50 p-3 rounded">
+                        <p class="text-gray-500">Tiempo total</p>
+                        <p id="final-time" class="text-2xl text-white title-font">00:00</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="bg-green-600 hover:bg-green-500 text-white py-4 px-8 rounded-lg title-font text-xl transition-all hover:scale-105 glow-green">
                 🔄 JUGAR DE NUEVO
             </button>
         </div>
     </div>
     
     <!-- Fullscreen Button -->
-    <button id="fullscreen-btn" class="fs-button" title="Pantalla completa">
-        ⛶
-    </button>
+    <button id="fullscreen-btn" class="fs-button" title="Pantalla completa">⛶</button>
 
     <script>
         // ============================================
@@ -1013,6 +1101,8 @@
         const AudioEngine = {
             ctx: null,
             enabled: true,
+            ambientNode: null,
+            ambientGain: null,
             
             init() {
                 this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1024,221 +1114,138 @@
                 }
             },
             
-            // Electric spark sound
             playSpark() {
                 if (!this.enabled || !this.ctx) return;
                 this.resume();
+                if (navigator.vibrate) navigator.vibrate(50);
                 
-                // Trigger haptic feedback on mobile
-                this.triggerHaptic(50);
-                
-                const duration = 0.15;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                const filter = this.ctx.createBiquadFilter();
-                
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + duration);
-                
-                filter.type = 'highpass';
-                filter.frequency.value = 500;
-                
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.15);
                 gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-                
-                osc.connect(filter);
-                filter.connect(gain);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start();
-                osc.stop(this.ctx.currentTime + duration);
+                osc.stop(this.ctx.currentTime + 0.15);
             },
             
-            // Connection sound
             playConnect() {
                 if (!this.enabled || !this.ctx) return;
                 this.resume();
-                
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(440, this.ctx.currentTime);
                 osc.frequency.setValueAtTime(660, this.ctx.currentTime + 0.1);
-                
                 gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start();
                 osc.stop(this.ctx.currentTime + 0.2);
             },
             
-            // Error/alarm sound
             playError() {
                 if (!this.enabled || !this.ctx) return;
                 this.resume();
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 
-                // Strong haptic for error
-                this.triggerHaptic([100, 50, 100]);
-                
-                const duration = 0.5;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                
-                for (let i = 0; i < 5; i++) {
-                    osc.frequency.setValueAtTime(150, this.ctx.currentTime + i * 0.1);
-                    osc.frequency.setValueAtTime(200, this.ctx.currentTime + i * 0.1 + 0.05);
-                }
-                
                 gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-                
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                
                 osc.start();
-                osc.stop(this.ctx.currentTime + duration);
+                osc.stop(this.ctx.currentTime + 0.5);
             },
             
-            // Lockdown alarm sound
-            playLockdown() {
-                if (!this.enabled || !this.ctx) return;
-                this.resume();
-                
-                // Long haptic pattern for lockdown
-                this.triggerHaptic([200, 100, 200, 100, 200]);
-                
-                const duration = 1.5;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.type = 'sawtooth';
-                
-                // Siren effect
-                for (let i = 0; i < 3; i++) {
-                    osc.frequency.setValueAtTime(400, this.ctx.currentTime + i * 0.5);
-                    osc.frequency.linearRampToValueAtTime(800, this.ctx.currentTime + i * 0.5 + 0.25);
-                    osc.frequency.linearRampToValueAtTime(400, this.ctx.currentTime + i * 0.5 + 0.5);
-                }
-                
-                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start();
-                osc.stop(this.ctx.currentTime + duration);
-            },
-            
-            // Keypad beep
-            playKeypadBeep() {
-                if (!this.enabled || !this.ctx) return;
-                this.resume();
-                
-                this.triggerHaptic(30);
-                
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                
-                osc.type = 'sine';
-                osc.frequency.value = 1200;
-                
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-                
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.1);
-            },
-            
-            // Unlock success sound
-            playUnlock() {
-                if (!this.enabled || !this.ctx) return;
-                this.resume();
-                
-                this.triggerHaptic([50, 50, 100]);
-                
-                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-                
-                notes.forEach((freq, i) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    
-                    gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.1);
-                    gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + i * 0.1 + 0.03);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.1 + 0.3);
-                    
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    
-                    osc.start(this.ctx.currentTime + i * 0.1);
-                    osc.stop(this.ctx.currentTime + i * 0.1 + 0.3);
-                });
-            },
-            
-            // Success sound
             playSuccess() {
                 if (!this.enabled || !this.ctx) return;
                 this.resume();
-                
                 const notes = [523.25, 659.25, 783.99, 1046.50];
-                
                 notes.forEach((freq, i) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
-                    
                     osc.type = 'sine';
                     osc.frequency.value = freq;
-                    
                     gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.15);
                     gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + i * 0.15 + 0.05);
                     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.15 + 0.4);
-                    
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    
                     osc.start(this.ctx.currentTime + i * 0.15);
                     osc.stop(this.ctx.currentTime + i * 0.15 + 0.4);
                 });
             },
             
-            // Ambient emergency hum
-            ambientNode: null,
-            ambientGain: null,
+            playBeepShort() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            },
+            
+            playBeepLong() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 600;
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.5);
+            },
+            
+            playCharge() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                if (navigator.vibrate) navigator.vibrate(100);
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1000, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            },
             
             startAmbient() {
                 if (!this.enabled || !this.ctx || this.ambientNode) return;
                 this.resume();
-                
                 this.ambientNode = this.ctx.createOscillator();
                 this.ambientGain = this.ctx.createGain();
                 const filter = this.ctx.createBiquadFilter();
-                
                 this.ambientNode.type = 'sawtooth';
                 this.ambientNode.frequency.value = 60;
-                
                 filter.type = 'lowpass';
                 filter.frequency.value = 200;
-                
                 this.ambientGain.gain.value = 0.05;
-                
                 this.ambientNode.connect(filter);
                 filter.connect(this.ambientGain);
                 this.ambientGain.connect(this.ctx.destination);
-                
                 this.ambientNode.start();
             },
             
@@ -1249,18 +1256,9 @@
                 }
             },
             
-            // Haptic feedback for mobile
-            triggerHaptic(pattern) {
-                if (navigator.vibrate) {
-                    navigator.vibrate(pattern);
-                }
-            },
-            
             toggle() {
                 this.enabled = !this.enabled;
-                if (!this.enabled) {
-                    this.stopAmbient();
-                }
+                if (!this.enabled) this.stopAmbient();
                 return this.enabled;
             }
         };
@@ -1271,39 +1269,52 @@
         const state = {
             gameId: null,
             playerRole: null,
-            connections: {
-                red: null,
-                blue: null,
-                green: null,
-                yellow: null
-            },
-            selectedWire: null,
-            solved: false,
-            errorCount: 0,
+            currentLevel: 1,
+            totalErrors: 0,
+            startTime: null,
             peer: null,
             conn: null,
             
-            // Phase 2 - Lockdown
-            phase: 1,
+            // Level 1: Wires
+            connections: { red: null, blue: null, green: null, yellow: null },
+            selectedWire: null,
             locked: false,
             lockdownCode: null,
             keypadInput: '',
-            keypadRevealed: false,
             
-            // Emergency Mode - Tension System
-            tensionLevel: 1,
-            emergencyStarted: false,
-            startTime: null,
-            emergencyInterval: null
+            // Level 2: Reactor
+            reactorCycles: 0,
+            reactorFails: 0,
+            pistonPhase: 0,
+            pistonInterval: null,
+            
+            // Level 3: Radio
+            currentPattern: null,
+            signalsDecoded: { oxygen: false, door: false, power: false, vent: false },
+            patterns: {
+                oxygen: ['short', 'short', 'short'],
+                door: ['long'],
+                power: ['short', 'long', 'short'],
+                vent: ['long', 'long']
+            },
+            patternQueue: [],
+            
+            // Level 4: Maze
+            playerPos: { x: 1, y: 1 },
+            mazeLayout: [
+                [1,1,1,1,1,1,1],
+                [1,0,0,0,1,0,1],
+                [1,0,1,0,0,0,1],
+                [1,0,1,1,1,0,1],
+                [1,0,0,2,0,0,1],
+                [1,1,0,1,0,3,1],
+                [1,1,1,1,1,1,1]
+            ]
+            // 0=path, 1=wall, 2=mine, 3=exit
         };
         
-        // Correct solution
-        const SOLUTION = {
-            red: '1',
-            blue: '3',
-            green: '2',
-            yellow: '4'
-        };
+        // Solutions
+        const WIRE_SOLUTION = { red: '1', blue: '3', green: '2', yellow: '4' };
         
         // ============================================
         // DOM ELEMENTS
@@ -1318,38 +1329,25 @@
         const joinSection = document.getElementById('join-section');
         const gameLink = document.getElementById('game-link');
         const copyBtn = document.getElementById('copy-btn');
-        const errorOverlay = document.getElementById('error-overlay');
-        const alertPopup = document.getElementById('alert-popup');
         
         // ============================================
-        // PEERJS NETWORKING
+        // NETWORKING
         // ============================================
         function generateGameId() {
             return 'bunker-' + Math.random().toString(36).substring(2, 8).toUpperCase();
         }
         
-        function generateLockdownCode() {
-            return Math.floor(1000 + Math.random() * 9000).toString();
-        }
-        
         function initializePeer(isHost) {
             return new Promise((resolve, reject) => {
                 const peerId = isHost ? state.gameId : null;
-                
-                state.peer = new Peer(peerId, {
-                    debug: 1
-                });
+                state.peer = new Peer(peerId, { debug: 1 });
                 
                 state.peer.on('open', (id) => {
-                    console.log('Peer opened with ID:', id);
-                    if (isHost) {
-                        state.gameId = id;
-                    }
+                    if (isHost) state.gameId = id;
                     resolve(id);
                 });
                 
                 state.peer.on('error', (err) => {
-                    console.error('Peer error:', err);
                     if (err.type === 'unavailable-id') {
                         state.gameId = generateGameId();
                         initializePeer(true).then(resolve).catch(reject);
@@ -1361,7 +1359,6 @@
                 
                 if (isHost) {
                     state.peer.on('connection', (conn) => {
-                        console.log('Incoming connection from:', conn.peer);
                         state.conn = conn;
                         setupConnection(conn);
                     });
@@ -1371,32 +1368,18 @@
         
         function connectToPeer(hostId) {
             return new Promise((resolve, reject) => {
-                console.log('Connecting to host:', hostId);
                 state.conn = state.peer.connect(hostId, { reliable: true });
-                
                 state.conn.on('open', () => {
-                    console.log('Connected to host!');
                     setupConnection(state.conn);
                     resolve();
                 });
-                
-                state.conn.on('error', (err) => {
-                    console.error('Connection error:', err);
-                    reject(err);
-                });
+                state.conn.on('error', reject);
             });
         }
         
         function setupConnection(conn) {
-            conn.on('data', (data) => {
-                console.log('Received:', data);
-                handleMessage(data);
-            });
-            
-            conn.on('close', () => {
-                console.log('Connection closed');
-                updateConnectionStatus(false);
-            });
+            conn.on('data', handleMessage);
+            conn.on('close', () => updateConnectionStatus(false));
         }
         
         function sendMessage(type, data = {}) {
@@ -1411,28 +1394,24 @@
             switch (type) {
                 case 'player-joined':
                     startGame();
-                    sendMessage('game-state', {
-                        connections: state.connections,
-                        errorCount: state.errorCount,
-                        phase: state.phase,
-                        locked: state.locked
-                    });
+                    sendMessage('game-state', { currentLevel: state.currentLevel });
                     break;
                     
                 case 'game-state':
+                    state.currentLevel = data.currentLevel || 1;
+                    break;
+                    
+                // Level 1 messages
+                case 'connection-update':
                     state.connections = data.connections;
-                    state.errorCount = data.errorCount;
-                    state.phase = data.phase || 1;
-                    state.locked = data.locked || false;
+                    state.totalErrors = data.errorCount || state.totalErrors;
                     updateLiveStatus();
                     break;
                     
-                case 'connection-update':
-                    handleConnectionUpdate(data);
-                    break;
-                    
                 case 'error-occurred':
-                    handleErrorAlert(data);
+                    showAlert('¡SOBRECARGA!', 'Conexión incorrecta');
+                    AudioEngine.playError();
+                    state.totalErrors = data.errorCount;
                     break;
                     
                 case 'trigger-lockdown':
@@ -1440,30 +1419,53 @@
                     break;
                     
                 case 'code-attempt':
-                    handleCodeAttempt(data);
+                    if (data.code === state.lockdownCode) {
+                        unlockSystem();
+                        sendMessage('code-success');
+                    }
                     break;
                     
                 case 'code-success':
                     handleCodeSuccess();
                     break;
                     
-                case 'puzzle-solved':
-                    handlePuzzleSolved();
+                case 'level-complete':
+                    transitionToLevel(data.nextLevel);
                     break;
                     
-                case 'emergency-started':
-                    handleEmergencyStarted();
+                // Level 2 messages
+                case 'charge-pressed':
+                    handleChargeResult(data);
                     break;
                     
-                case 'tension-update':
-                    handleTensionUpdate(data);
+                case 'reactor-update':
+                    updateReactorStatus(data);
                     break;
                     
-                case 'start-emergency':
-                    // Sync emergency start from Player A
-                    if (!state.emergencyStarted) {
-                        handleEmergencyStarted();
-                    }
+                // Level 3 messages
+                case 'pattern-playing':
+                    // Player B knows a pattern is playing
+                    break;
+                    
+                case 'switch-activated':
+                    handleSwitchResult(data);
+                    break;
+                    
+                case 'signal-decoded':
+                    updateSignalStatus(data);
+                    break;
+                    
+                // Level 4 messages
+                case 'player-moved':
+                    handlePlayerMove(data);
+                    break;
+                    
+                case 'maze-result':
+                    handleMazeResult(data);
+                    break;
+                    
+                case 'game-complete':
+                    showFinalSuccess();
                     break;
             }
         }
@@ -1471,36 +1473,15 @@
         function updateConnectionStatus(connected) {
             const statusA = document.getElementById('connection-status-a');
             const statusB = document.getElementById('connection-status-b');
-            
-            if (connected) {
-                if (statusA) {
-                    statusA.textContent = '● Conectado';
-                    statusA.classList.remove('text-yellow-400');
-                    statusA.classList.add('text-green-400');
-                }
-                if (statusB) {
-                    statusB.textContent = '● Conectado';
-                    statusB.classList.remove('text-yellow-400');
-                    statusB.classList.add('text-green-400');
-                }
-            } else {
-                if (statusA) {
-                    statusA.textContent = '● Desconectado';
-                    statusA.classList.remove('text-green-400');
-                    statusA.classList.add('text-red-400');
-                }
-                if (statusB) {
-                    statusB.textContent = '● Desconectado';
-                    statusB.classList.remove('text-green-400');
-                    statusB.classList.add('text-red-400');
-                }
-            }
+            const cls = connected ? 'text-green-400' : 'text-red-400';
+            const txt = connected ? '● Conectado' : '● Desconectado';
+            if (statusA) { statusA.textContent = txt; statusA.className = cls; }
+            if (statusB) { statusB.textContent = txt; statusB.className = cls; }
         }
         
         // ============================================
-        // GAME LOGIC
+        // GAME FLOW
         // ============================================
-        
         function init() {
             const urlParams = new URLSearchParams(window.location.search);
             const gameId = urlParams.get('game');
@@ -1512,9 +1493,7 @@
             }
             
             document.addEventListener('click', () => {
-                if (!AudioEngine.ctx) {
-                    AudioEngine.init();
-                }
+                if (!AudioEngine.ctx) AudioEngine.init();
             }, { once: true });
         }
         
@@ -1525,23 +1504,19 @@
             try {
                 state.gameId = generateGameId();
                 state.playerRole = 'A';
-                
                 await initializePeer(true);
                 
                 const url = `${window.location.origin}${window.location.pathname}?game=${state.gameId}`;
                 gameLink.value = url;
                 linkSection.classList.remove('hidden');
                 createBtn.classList.add('hidden');
-                
             } catch (err) {
                 createBtn.disabled = false;
                 createBtn.textContent = '⚡ CREAR PARTIDA';
-                console.error(err);
             }
         });
         
         copyBtn.addEventListener('click', () => {
-            gameLink.select();
             navigator.clipboard.writeText(gameLink.value);
             copyBtn.textContent = '✓';
             setTimeout(() => copyBtn.textContent = '📋', 2000);
@@ -1553,39 +1528,33 @@
             
             try {
                 state.playerRole = 'B';
-                
                 await initializePeer(false);
                 await connectToPeer(state.gameId);
-                
                 sendMessage('player-joined');
                 startGame();
-                
             } catch (err) {
                 joinBtn.disabled = false;
                 joinBtn.textContent = 'UNIRSE COMO TÉCNICO';
                 document.getElementById('connection-error').classList.remove('hidden');
-                console.error(err);
             }
         });
         
         function startGame() {
             lobbyScreen.classList.add('hidden');
             updateConnectionStatus(true);
+            state.startTime = Date.now();
             
             if (state.playerRole === 'A') {
                 playerAScreen.classList.remove('hidden');
-                setupPlayerAInteraction();
+                setupLevel1A();
                 AudioEngine.startAmbient();
-                
                 document.getElementById('sound-toggle-a').addEventListener('click', () => {
                     const enabled = AudioEngine.toggle();
                     document.getElementById('sound-toggle-a').textContent = enabled ? '🔊' : '🔇';
                 });
-                
             } else {
                 playerBScreen.classList.remove('hidden');
-                setupPlayerBInteraction();
-                
+                setupLevel1B();
                 document.getElementById('sound-toggle-b').addEventListener('click', () => {
                     const enabled = AudioEngine.toggle();
                     document.getElementById('sound-toggle-b').textContent = enabled ? '🔊' : '🔇';
@@ -1595,30 +1564,76 @@
             document.getElementById('waiting-indicator')?.classList.add('hidden');
         }
         
-        // Setup Player A wire interactions
-        function setupPlayerAInteraction() {
+        function transitionToLevel(level) {
+            state.currentLevel = level;
+            
+            // Update indicators
+            const indicatorA = document.getElementById('level-indicator-a');
+            const indicatorB = document.getElementById('level-indicator-b');
+            if (indicatorA) indicatorA.textContent = `NIVEL ${level}`;
+            if (indicatorB) indicatorB.textContent = `NIVEL ${level}`;
+            
+            // Hide all level containers
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`level-${i}-a`)?.classList.add('hidden');
+                document.getElementById(`level-${i}-b`)?.classList.add('hidden');
+            }
+            
+            // Show current level
+            if (state.playerRole === 'A') {
+                document.getElementById(`level-${level}-a`)?.classList.remove('hidden');
+                setupLevelA(level);
+            } else {
+                document.getElementById(`level-${level}-b`)?.classList.remove('hidden');
+                setupLevelB(level);
+            }
+            
+            AudioEngine.playSuccess();
+        }
+        
+        function setupLevelA(level) {
+            switch(level) {
+                case 2: setupLevel2A(); break;
+                case 3: setupLevel3A(); break;
+                case 4: setupLevel4A(); break;
+            }
+        }
+        
+        function setupLevelB(level) {
+            switch(level) {
+                case 2: setupLevel2B(); break;
+                case 3: setupLevel3B(); break;
+                case 4: setupLevel4B(); break;
+            }
+        }
+        
+        function showAlert(title, message) {
+            const popup = document.getElementById('alert-popup');
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = message;
+            popup.classList.remove('hidden');
+            setTimeout(() => popup.classList.add('hidden'), 2000);
+        }
+        
+        // ============================================
+        // LEVEL 1: WIRES
+        // ============================================
+        function setupLevel1A() {
             const wires = document.querySelectorAll('.wire');
             const terminals = document.querySelectorAll('.terminal');
             const svg = document.getElementById('connection-svg');
             
             wires.forEach(wire => {
                 wire.addEventListener('click', () => {
-                    if (state.locked) {
-                        AudioEngine.playError();
-                        return;
-                    }
-                    
+                    if (state.locked) return;
                     AudioEngine.playSpark();
                     
-                    document.querySelectorAll('.wire').forEach(w => w.classList.remove('ring-4', 'ring-white'));
+                    wires.forEach(w => w.classList.remove('ring-4', 'ring-white'));
                     terminals.forEach(t => t.classList.remove('highlight'));
                     
                     state.selectedWire = wire.dataset.color;
                     wire.classList.add('ring-4', 'ring-white');
-                    
-                    terminals.forEach(t => {
-                        if (!state.locked) t.classList.add('highlight');
-                    });
+                    terminals.forEach(t => t.classList.add('highlight'));
                 });
             });
             
@@ -1626,12 +1641,23 @@
                 terminal.addEventListener('click', () => {
                     if (!state.selectedWire || state.locked) return;
                     
-                    const oldTerminal = state.connections[state.selectedWire];
-                    if (oldTerminal) {
-                        document.getElementById(`terminal-${oldTerminal}`).classList.remove('connected');
+                    const terminalNum = terminal.dataset.terminal;
+                    
+                    // Prevent double-click on same connection
+                    if (state.connections[state.selectedWire] === terminalNum) {
+                        wires.forEach(w => w.classList.remove('ring-4', 'ring-white'));
+                        terminals.forEach(t => t.classList.remove('highlight'));
+                        state.selectedWire = null;
+                        return;
                     }
                     
-                    const terminalNum = terminal.dataset.terminal;
+                    // Clear old connection
+                    const oldTerminal = state.connections[state.selectedWire];
+                    if (oldTerminal) {
+                        document.getElementById(`terminal-${oldTerminal}`)?.classList.remove('connected', 'occupied');
+                    }
+                    
+                    // Clear terminal if occupied by another wire
                     Object.keys(state.connections).forEach(color => {
                         if (state.connections[color] === terminalNum) {
                             state.connections[color] = null;
@@ -1639,13 +1665,19 @@
                         }
                     });
                     
+                    // Make connection
                     state.connections[state.selectedWire] = terminalNum;
-                    terminal.classList.add('connected');
+                    terminal.classList.add('connected', 'occupied');
                     
                     AudioEngine.playConnect();
                     
-                    if (SOLUTION[state.selectedWire] !== terminalNum) {
-                        triggerError();
+                    if (WIRE_SOLUTION[state.selectedWire] !== terminalNum) {
+                        state.totalErrors++;
+                        document.getElementById('error-count').textContent = state.totalErrors;
+                        document.getElementById('error-overlay').classList.add('error-flash');
+                        setTimeout(() => document.getElementById('error-overlay').classList.remove('error-flash'), 500);
+                        AudioEngine.playError();
+                        sendMessage('error-occurred', { errorCount: state.totalErrors });
                     }
                     
                     updateConnectionDisplay(state.selectedWire, terminalNum);
@@ -1653,77 +1685,43 @@
                     
                     sendMessage('connection-update', {
                         connections: state.connections,
-                        errorCount: state.errorCount
+                        errorCount: state.totalErrors
                     });
                     
-                    // Start emergency protocol on first connection
-                    const totalConnections = Object.values(state.connections).filter(c => c !== null).length;
-                    if (totalConnections >= 1 && !state.emergencyStarted) {
-                        startEmergencyProtocol();
-                    }
+                    checkLevel1Solution();
                     
-                    // Check for lockdown trigger (2 correct connections)
-                    checkLockdownTrigger();
-                    
-                    // Check final solution
-                    checkSolution();
-                    
-                    document.querySelectorAll('.wire').forEach(w => w.classList.remove('ring-4', 'ring-white'));
+                    wires.forEach(w => w.classList.remove('ring-4', 'ring-white'));
                     terminals.forEach(t => t.classList.remove('highlight'));
                     state.selectedWire = null;
                 });
             });
             
             document.getElementById('reset-wires').addEventListener('click', () => {
-                if (state.locked) {
-                    AudioEngine.playError();
-                    return;
-                }
-                
+                if (state.locked) return;
                 state.connections = { red: null, blue: null, green: null, yellow: null };
-                terminals.forEach(t => t.classList.remove('connected'));
+                terminals.forEach(t => t.classList.remove('connected', 'occupied'));
                 ['red', 'blue', 'green', 'yellow'].forEach(c => updateConnectionDisplay(c, null));
                 svg.innerHTML = '';
-                
-                sendMessage('connection-update', {
-                    connections: state.connections,
-                    errorCount: state.errorCount
-                });
+                AudioEngine.playSpark();
+                sendMessage('connection-update', { connections: state.connections, errorCount: state.totalErrors });
             });
         }
         
-        // Setup Player B keypad interaction
-        function setupPlayerBInteraction() {
-            // Coffee stain reveal
-            const coffeeStain = document.getElementById('keypad-coffee-stain');
-            coffeeStain.addEventListener('click', () => {
-                if (!state.keypadRevealed) {
-                    state.keypadRevealed = true;
-                    coffeeStain.classList.add('revealed');
-                    AudioEngine.playSpark();
-                }
-            });
-            
-            // Keypad buttons
+        function setupLevel1B() {
             const keypadBtns = document.querySelectorAll('.keypad-btn');
             const keypadDisplay = document.getElementById('keypad-display');
-            const keypadStatus = document.getElementById('keypad-status');
             
             keypadBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const num = btn.dataset.num;
-                    AudioEngine.playKeypadBeep();
+                    AudioEngine.playSpark();
                     
                     if (num === 'clear') {
                         state.keypadInput = '';
                         keypadDisplay.textContent = '----';
-                        keypadStatus.textContent = 'Esperando código...';
-                        keypadStatus.classList.remove('text-red-500', 'text-green-500');
-                        keypadStatus.classList.add('text-gray-500');
                     } else if (num === 'enter') {
                         if (state.keypadInput.length === 4) {
                             sendMessage('code-attempt', { code: state.keypadInput });
-                            keypadStatus.textContent = 'Verificando...';
                         }
                     } else {
                         if (state.keypadInput.length < 4) {
@@ -1733,452 +1731,6 @@
                     }
                 });
             });
-        }
-        
-        // ============================================
-        // EMERGENCY MODE - THE PANIC ENGINE
-        // ============================================
-        function startEmergencyProtocol() {
-            if (state.emergencyStarted || state.playerRole !== 'A') return;
-            state.emergencyStarted = true;
-            state.startTime = Date.now();
-            
-            console.log("⚠️ Protocolo de Emergencia activado");
-            
-            // Show tension meter
-            document.getElementById('tension-meter').classList.remove('hidden');
-            
-            // Notify Player B that emergency started
-            sendMessage('emergency-started');
-            
-            state.emergencyInterval = setInterval(() => {
-                if (state.solved) {
-                    clearInterval(state.emergencyInterval);
-                    resetEmergencyEffects();
-                    return;
-                }
-                
-                const elapsed = (Date.now() - state.startTime) / 1000;
-                state.tensionLevel = 1 + (elapsed / 30); // Increases every 30 seconds
-                
-                // 1. Increase ambient frequency (from 60Hz upward - more unsettling)
-                if (AudioEngine.ambientNode && AudioEngine.ctx) {
-                    const newFreq = Math.min(60 + (elapsed * 0.5), 150); // Cap at 150Hz
-                    AudioEngine.ambientNode.frequency.setTargetAtTime(newFreq, AudioEngine.ctx.currentTime, 0.5);
-                }
-                
-                // 2. Increase ambient volume slightly
-                if (AudioEngine.ambientGain && AudioEngine.ctx) {
-                    const newGain = Math.min(0.05 + (elapsed * 0.002), 0.15);
-                    AudioEngine.ambientGain.gain.setTargetAtTime(newGain, AudioEngine.ctx.currentTime, 0.5);
-                }
-                
-                // 3. Speed up flicker animation
-                const flickerSpeed = Math.max(0.3, 3 - (elapsed / 20));
-                document.querySelectorAll('.flicker').forEach(el => {
-                    el.style.animationDuration = `${flickerSpeed}s`;
-                });
-                
-                // 4. Speed up spark animation
-                const sparkSpeed = Math.max(0.03, 0.1 - (elapsed / 500));
-                document.querySelectorAll('.spark').forEach(el => {
-                    el.style.animationDuration = `${sparkSpeed}s`;
-                });
-                
-                // 5. Pulsing red overlay effect (sine wave based)
-                const emergencyOverlay = document.getElementById('emergency-overlay');
-                if (emergencyOverlay) {
-                    const pulseOpacity = (Math.sin(elapsed * 2) * 0.15) + 0.15;
-                    emergencyOverlay.style.opacity = Math.min(pulseOpacity + (elapsed / 200), 0.5);
-                }
-                
-                // 6. Increase red glow intensity progressively
-                const intensity = Math.min(0.6, 0.2 + (elapsed / 120));
-                const emergencyGlow = document.getElementById('emergency-glow');
-                if (emergencyGlow) {
-                    emergencyGlow.style.opacity = intensity;
-                    const pulseSpeed = Math.max(0.5, 2 - (elapsed / 60));
-                    emergencyGlow.style.animationDuration = `${pulseSpeed}s`;
-                }
-                
-                // 7. Add screen shake at high tension (after 60 seconds)
-                if (elapsed > 60 && Math.random() > 0.9) {
-                    triggerScreenShake();
-                }
-                
-                // 8. Random sparks sound at higher tension
-                if (elapsed > 30 && Math.random() > 0.95) {
-                    AudioEngine.playSpark();
-                }
-                
-                // 9. Periodic haptic pulses on mobile (heartbeat effect)
-                if (elapsed > 45 && Math.floor(elapsed) % 3 === 0) {
-                    AudioEngine.triggerHaptic(30);
-                }
-                
-                // 10. Random vibration for tension (Player A)
-                if (Math.random() > 0.95) {
-                    AudioEngine.triggerHaptic(20);
-                }
-                
-                // 11. Update tension meter UI
-                updateTensionMeter(elapsed);
-                
-                // Send tension update to Player B
-                sendMessage('tension-update', { 
-                    tensionLevel: state.tensionLevel,
-                    elapsed: elapsed 
-                });
-                
-            }, 1000);
-        }
-        
-        // Reset all emergency effects when solved
-        function resetEmergencyEffects() {
-            // Reset red overlay
-            const emergencyOverlay = document.getElementById('emergency-overlay');
-            if (emergencyOverlay) emergencyOverlay.style.opacity = '0';
-            
-            // Reset ambient audio
-            if (AudioEngine.ambientNode && AudioEngine.ctx) {
-                AudioEngine.ambientNode.frequency.setTargetAtTime(60, AudioEngine.ctx.currentTime, 1);
-            }
-            
-            // Remove static noise if exists
-            const staticNoise = document.getElementById('static-noise-overlay');
-            if (staticNoise) staticNoise.remove();
-            
-            // Reset emergency glow
-            const emergencyGlow = document.getElementById('emergency-glow');
-            if (emergencyGlow) emergencyGlow.style.opacity = '0';
-        }
-        
-        function updateTensionMeter(elapsed) {
-            // Update timer
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = Math.floor(elapsed % 60);
-            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            const timeEl = document.getElementById('tension-time');
-            if (timeEl) timeEl.textContent = timeStr;
-            
-            // Update bar (max at 120 seconds = 100%)
-            const percentage = Math.min((elapsed / 120) * 100, 100);
-            const barEl = document.getElementById('tension-bar');
-            if (barEl) barEl.style.width = `${percentage}%`;
-            
-            // Update warning text based on tension
-            const warningEl = document.getElementById('tension-warning');
-            if (warningEl) {
-                if (elapsed < 30) {
-                    warningEl.textContent = 'Sistema inestable';
-                    warningEl.className = 'text-center text-xs mt-1 text-yellow-500';
-                } else if (elapsed < 60) {
-                    warningEl.textContent = '⚠️ Fluctuaciones detectadas';
-                    warningEl.className = 'text-center text-xs mt-1 text-orange-500';
-                } else if (elapsed < 90) {
-                    warningEl.textContent = '🔥 ¡Sobrecalentamiento crítico!';
-                    warningEl.className = 'text-center text-xs mt-1 text-red-500 font-bold';
-                } else {
-                    warningEl.textContent = '💀 ¡COLAPSO INMINENTE!';
-                    warningEl.className = 'text-center text-xs mt-1 text-red-400 font-bold animate-pulse';
-                }
-            }
-        }
-        
-        function triggerScreenShake() {
-            const panel = document.getElementById('main-panel-a');
-            if (!panel) return;
-            
-            panel.style.transition = 'transform 0.1s';
-            const shakeIntensity = Math.min(5, state.tensionLevel);
-            
-            const shake = () => {
-                const x = (Math.random() - 0.5) * shakeIntensity;
-                const y = (Math.random() - 0.5) * shakeIntensity;
-                panel.style.transform = `translate(${x}px, ${y}px)`;
-            };
-            
-            shake();
-            setTimeout(shake, 50);
-            setTimeout(shake, 100);
-            setTimeout(() => {
-                panel.style.transform = 'translate(0, 0)';
-            }, 150);
-        }
-        
-        function handleEmergencyStarted() {
-            // Player B receives notification that emergency started
-            state.emergencyStarted = true;
-            state.startTime = Date.now();
-            
-            console.log("⚠️ Player B: Emergencia detectada");
-            
-            // Show warning message
-            const warningDiv = document.createElement('div');
-            warningDiv.id = 'emergency-warning';
-            warningDiv.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-900 border-2 border-red-500 px-4 py-2 rounded-lg z-50';
-            warningDiv.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">⚡</span>
-                    <span class="text-red-300 text-sm">Sistema inestable - ¡Dense prisa!</span>
-                </div>
-            `;
-            document.body.appendChild(warningDiv);
-            
-            // Add subtle red pulsing to manual page
-            const manualPage = document.getElementById('manual-page');
-            if (manualPage) {
-                manualPage.style.boxShadow = '0 0 30px rgba(255, 0, 0, 0.3)';
-            }
-            
-            // Add static noise overlay
-            const staticNoise = document.createElement('div');
-            staticNoise.id = 'static-noise-overlay';
-            staticNoise.className = 'static-noise';
-            staticNoise.style.opacity = '0';
-            document.body.appendChild(staticNoise);
-        }
-        
-        function handleTensionUpdate(data) {
-            state.tensionLevel = data.tensionLevel;
-            const elapsed = data.elapsed;
-            
-            // Subtle effects on Player B's screen based on tension
-            const manualPage = document.getElementById('manual-page');
-            if (manualPage && elapsed > 30) {
-                const shake = Math.sin(elapsed * 0.5) * (data.tensionLevel * 0.5);
-                manualPage.style.transform = `rotate(${1 + shake * 0.1}deg)`;
-                
-                // Increase red glow on manual
-                const glowIntensity = Math.min(60, (elapsed - 30) / 2);
-                manualPage.style.boxShadow = `0 0 ${glowIntensity}px rgba(255, 0, 0, 0.4)`;
-            }
-            
-            // Show static noise after 20 seconds
-            if (elapsed > 20) {
-                const staticNoise = document.getElementById('static-noise-overlay');
-                if (staticNoise) {
-                    const noiseOpacity = Math.min(0.15, (elapsed - 20) / 200);
-                    staticNoise.style.opacity = noiseOpacity;
-                }
-            }
-            
-            // Apply glitch effect to random text after 30 seconds
-            if (elapsed > 30 && Math.random() > 0.9) {
-                applyGlitchEffect();
-            }
-            
-            // Flicker the lights on Player B side at high tension
-            if (elapsed > 45) {
-                const powerOverlay = document.getElementById('power-failure-overlay');
-                if (powerOverlay && Math.random() > 0.9) {
-                    powerOverlay.style.opacity = '0.3';
-                    setTimeout(() => {
-                        powerOverlay.style.opacity = state.errorCount >= 3 ? '0.3' : '0';
-                    }, 100);
-                }
-            }
-            
-            // More intense effects after 60 seconds
-            if (elapsed > 60) {
-                // Random haptic on Player B's device too
-                if (Math.random() > 0.95) {
-                    AudioEngine.triggerHaptic(30);
-                }
-                
-                // Occasional screen flash
-                if (Math.random() > 0.97) {
-                    const powerOverlay = document.getElementById('power-failure-overlay');
-                    if (powerOverlay) {
-                        powerOverlay.style.opacity = '0.6';
-                        setTimeout(() => {
-                            powerOverlay.style.opacity = state.errorCount >= 3 ? '0.3' : '0';
-                        }, 50);
-                    }
-                }
-            }
-        }
-        
-        // Glitch effect for Player B's manual text
-        function applyGlitchEffect() {
-            const textElements = document.querySelectorAll('#manual-page p, #manual-page li, #manual-page h3');
-            if (textElements.length === 0) return;
-            
-            const randomElement = textElements[Math.floor(Math.random() * textElements.length)];
-            const originalText = randomElement.textContent;
-            const originalClass = randomElement.className;
-            
-            // Glitch characters
-            const glitchChars = "!@#$%^&*()_+-=[]{}|;':\",./<>?█▓▒░";
-            
-            // Corrupt the text temporarily
-            let corruptedText = '';
-            for (let i = 0; i < Math.min(originalText.length, 20); i++) {
-                if (Math.random() > 0.5) {
-                    corruptedText += glitchChars[Math.floor(Math.random() * glitchChars.length)];
-                } else {
-                    corruptedText += originalText[i] || '';
-                }
-            }
-            
-            randomElement.textContent = 'ERROR: SISTEMA CORRUPTO...';
-            randomElement.classList.add('glitch-text');
-            
-            // Restore after brief moment
-            setTimeout(() => {
-                randomElement.textContent = originalText;
-                randomElement.className = originalClass;
-            }, 300);
-        }
-        
-        // Check if lockdown should trigger
-        function checkLockdownTrigger() {
-            if (state.locked || state.phase !== 1) return;
-            
-            let correctCount = 0;
-            Object.keys(SOLUTION).forEach(color => {
-                if (state.connections[color] === SOLUTION[color]) correctCount++;
-            });
-            
-            if (correctCount >= 2) {
-                triggerLockdown();
-            }
-        }
-        
-        // Trigger lockdown for Player A
-        function triggerLockdown() {
-            state.locked = true;
-            state.phase = 2;
-            state.lockdownCode = generateLockdownCode();
-            
-            // Update UI
-            document.getElementById('phase-indicator-a').textContent = 'FASE 2';
-            document.getElementById('phase-indicator-a').classList.remove('bg-gray-700', 'text-gray-400');
-            document.getElementById('phase-indicator-a').classList.add('bg-yellow-700', 'text-yellow-300');
-            
-            // Show lockdown display
-            document.getElementById('lockdown-display').classList.remove('hidden');
-            document.getElementById('lockdown-code').textContent = state.lockdownCode;
-            
-            // Lock wires
-            document.querySelectorAll('.wire').forEach(w => w.classList.add('locked'));
-            document.querySelectorAll('.terminal').forEach(t => t.classList.add('locked'));
-            document.getElementById('main-panel-a').classList.add('border-yellow-500');
-            
-            // Play alarm
-            AudioEngine.playLockdown();
-            
-            // Notify Player B
-            sendMessage('trigger-lockdown', { code: state.lockdownCode });
-        }
-        
-        // Handle lockdown trigger for Player B
-        function handleLockdownTrigger(data) {
-            state.locked = true;
-            state.phase = 2;
-            state.lockdownCode = data.code;
-            
-            // Update UI
-            document.getElementById('phase-indicator-b').textContent = 'FASE 2';
-            document.getElementById('phase-indicator-b').classList.remove('bg-amber-700', 'text-amber-300');
-            document.getElementById('phase-indicator-b').classList.add('bg-yellow-700', 'text-yellow-300');
-            
-            // Show lockdown alert
-            const lockdownAlert = document.getElementById('lockdown-alert');
-            lockdownAlert.classList.remove('hidden');
-            setTimeout(() => lockdownAlert.classList.add('hidden'), 4000);
-            
-            // Show keypad
-            document.getElementById('security-keypad-container').classList.remove('hidden');
-            document.getElementById('lockdown-status-b').classList.remove('hidden');
-            
-            // Play alarm
-            AudioEngine.playLockdown();
-        }
-        
-        // Handle code attempt from Player B (for Player A to verify)
-        function handleCodeAttempt(data) {
-            if (data.code === state.lockdownCode) {
-                // Correct code!
-                unlockSystem();
-                sendMessage('code-success');
-            } else {
-                // Wrong code
-                sendMessage('code-failed');
-                AudioEngine.playError();
-            }
-        }
-        
-        // Unlock system after correct code
-        function unlockSystem() {
-            state.locked = false;
-            
-            // Update UI for Player A
-            document.getElementById('lockdown-display').classList.add('hidden');
-            document.querySelectorAll('.wire').forEach(w => w.classList.remove('locked'));
-            document.querySelectorAll('.terminal').forEach(t => t.classList.remove('locked'));
-            document.getElementById('main-panel-a').classList.remove('border-yellow-500');
-            document.getElementById('main-panel-a').classList.add('border-green-500');
-            
-            document.getElementById('phase-indicator-a').textContent = 'DESBLOQUEADO';
-            document.getElementById('phase-indicator-a').classList.remove('bg-yellow-700', 'text-yellow-300');
-            document.getElementById('phase-indicator-a').classList.add('bg-green-700', 'text-green-300');
-            
-            AudioEngine.playUnlock();
-        }
-        
-        // Handle code success for Player B
-        function handleCodeSuccess() {
-            state.locked = false;
-            
-            const keypadStatus = document.getElementById('keypad-status');
-            keypadStatus.textContent = '✓ ¡SISTEMA DESBLOQUEADO!';
-            keypadStatus.classList.remove('text-gray-500', 'text-red-500');
-            keypadStatus.classList.add('text-green-500');
-            
-            document.getElementById('lockdown-status-b').textContent = '✓ Sistema desbloqueado';
-            document.getElementById('lockdown-status-b').classList.remove('text-yellow-400');
-            document.getElementById('lockdown-status-b').classList.add('text-green-400');
-            
-            document.getElementById('phase-indicator-b').textContent = 'DESBLOQUEADO';
-            document.getElementById('phase-indicator-b').classList.remove('bg-yellow-700', 'text-yellow-300');
-            document.getElementById('phase-indicator-b').classList.add('bg-green-700', 'text-green-300');
-            
-            AudioEngine.playUnlock();
-        }
-        
-        function triggerError() {
-            state.errorCount++;
-            document.getElementById('error-count').textContent = state.errorCount;
-            
-            errorOverlay.classList.add('error-flash');
-            setTimeout(() => errorOverlay.classList.remove('error-flash'), 500);
-            
-            AudioEngine.playError();
-            
-            sendMessage('error-occurred', { errorCount: state.errorCount });
-        }
-        
-        function handleErrorAlert(data) {
-            AudioEngine.playError();
-            
-            alertPopup.classList.remove('hidden');
-            setTimeout(() => alertPopup.classList.add('hidden'), 2000);
-            
-            state.errorCount = data?.errorCount || state.errorCount + 1;
-            document.getElementById('error-count-b').textContent = state.errorCount;
-            
-            // Progressive dimming based on errors
-            const manualPage = document.getElementById('manual-page');
-            const powerOverlay = document.getElementById('power-failure-overlay');
-            
-            if (state.errorCount >= 5) {
-                manualPage.classList.add('very-dimmed');
-                powerOverlay.style.opacity = '0.5';
-            } else if (state.errorCount >= 3) {
-                manualPage.classList.add('dimmed');
-                powerOverlay.style.opacity = '0.3';
-            }
         }
         
         function updateConnectionDisplay(color, terminal) {
@@ -2220,16 +1772,8 @@
                 line.setAttribute('stroke', colors[color]);
                 line.setAttribute('stroke-width', '4');
                 line.setAttribute('class', 'connection-line');
-                
                 svg.appendChild(line);
             });
-        }
-        
-        function handleConnectionUpdate(data) {
-            state.connections = data.connections;
-            state.errorCount = data.errorCount;
-            
-            updateLiveStatus();
         }
         
         function updateLiveStatus() {
@@ -2238,195 +1782,438 @@
                 if (el) {
                     const terminal = state.connections[color];
                     el.textContent = terminal ? `Borne ${terminal}` : '---';
-                    
-                    const isCorrect = terminal === SOLUTION[color];
+                    const isCorrect = terminal === WIRE_SOLUTION[color];
                     el.classList.remove('text-green-400', 'text-red-400');
-                    if (terminal) {
-                        el.classList.add(isCorrect ? 'text-green-400' : 'text-red-400');
-                    }
+                    if (terminal) el.classList.add(isCorrect ? 'text-green-400' : 'text-red-400');
                 }
             });
             
             let correct = 0;
-            Object.keys(SOLUTION).forEach(color => {
-                if (state.connections[color] === SOLUTION[color]) correct++;
+            Object.keys(WIRE_SOLUTION).forEach(color => {
+                if (state.connections[color] === WIRE_SOLUTION[color]) correct++;
             });
-            const correctEl = document.getElementById('correct-count');
-            if (correctEl) correctEl.textContent = correct;
-            
-            const errorEl = document.getElementById('error-count-b');
-            if (errorEl) errorEl.textContent = state.errorCount;
+            document.getElementById('correct-count').textContent = correct;
         }
         
-        function checkSolution() {
-            if (state.locked) return; // Can't win while locked
+        function checkLevel1Solution() {
+            // Check for lockdown (2 correct)
+            let correct = 0;
+            Object.keys(WIRE_SOLUTION).forEach(color => {
+                if (state.connections[color] === WIRE_SOLUTION[color]) correct++;
+            });
             
-            const isCorrect = Object.keys(SOLUTION).every(
-                color => state.connections[color] === SOLUTION[color]
-            );
+            if (correct >= 2 && !state.locked) {
+                triggerLockdown();
+            }
             
-            if (isCorrect && !state.solved) {
-                state.solved = true;
-                
-                AudioEngine.stopAmbient();
-                AudioEngine.playSuccess();
-                
-                document.getElementById('sparks').classList.add('hidden');
-                document.getElementById('emergency-glow').classList.add('hidden');
-                
-                setTimeout(() => {
-                    document.getElementById('door-a').classList.remove('hidden');
-                    setTimeout(() => {
-                        document.getElementById('door-left-a').classList.add('door-open-left');
-                        document.getElementById('door-right-a').classList.add('door-open-right');
-                    }, 500);
-                }, 500);
-                
-                sendMessage('puzzle-solved', { errorCount: state.errorCount });
-                
-                setTimeout(() => {
-                    showSuccess();
-                }, 3500);
+            // Check complete solution
+            if (correct === 4 && !state.locked) {
+                completeLevel1();
             }
         }
         
-        function handlePuzzleSolved() {
-            state.solved = true;
+        function triggerLockdown() {
+            state.locked = true;
+            state.lockdownCode = Math.floor(1000 + Math.random() * 9000).toString();
             
+            document.getElementById('lockdown-display').classList.remove('hidden');
+            document.getElementById('lockdown-code').textContent = state.lockdownCode;
+            document.querySelectorAll('.wire').forEach(w => w.classList.add('locked'));
+            document.querySelectorAll('.terminal').forEach(t => t.classList.add('locked'));
+            
+            AudioEngine.playError();
+            sendMessage('trigger-lockdown', { code: state.lockdownCode });
+        }
+        
+        function handleLockdownTrigger(data) {
+            state.locked = true;
+            state.lockdownCode = data.code;
+            document.getElementById('security-keypad-container').classList.remove('hidden');
+            AudioEngine.playError();
+            showAlert('🔒 BLOQUEADO', 'Ingresa el código del operador');
+        }
+        
+        function unlockSystem() {
+            state.locked = false;
+            document.getElementById('lockdown-display').classList.add('hidden');
+            document.querySelectorAll('.wire').forEach(w => w.classList.remove('locked'));
+            document.querySelectorAll('.terminal').forEach(t => t.classList.remove('locked'));
             AudioEngine.playSuccess();
-            
-            document.getElementById('door-b').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('door-left-b').classList.add('door-open-left');
-                document.getElementById('door-right-b').classList.add('door-open-right');
-            }, 500);
-            
-            setTimeout(() => {
-                showSuccess();
-            }, 3500);
         }
         
-        function showSuccess() {
-            // Stop emergency protocol
-            if (state.emergencyInterval) {
-                clearInterval(state.emergencyInterval);
+        function handleCodeSuccess() {
+            state.locked = false;
+            document.getElementById('security-keypad-container').classList.add('hidden');
+            AudioEngine.playSuccess();
+            showAlert('✓ DESBLOQUEADO', 'Sistema operativo');
+        }
+        
+        function completeLevel1() {
+            AudioEngine.playSuccess();
+            sendMessage('level-complete', { nextLevel: 2 });
+            setTimeout(() => transitionToLevel(2), 1500);
+        }
+        
+        // ============================================
+        // LEVEL 2: REACTOR
+        // ============================================
+        function setupLevel2A() {
+            const chargeBtn = document.getElementById('charge-btn');
+            const piston = document.getElementById('reactor-piston');
+            
+            // Piston animation cycle tracking
+            let pistonStart = Date.now();
+            const cycleDuration = 2000; // 2 seconds per cycle
+            
+            chargeBtn.addEventListener('click', () => {
+                AudioEngine.playCharge();
+                
+                const elapsed = (Date.now() - pistonStart) % cycleDuration;
+                const phase = elapsed / cycleDuration; // 0 to 1
+                
+                // Peak is at 0.5 (top of cycle)
+                const accuracy = Math.abs(phase - 0.5);
+                const isGood = accuracy < 0.15; // 15% tolerance
+                
+                if (isGood) {
+                    state.reactorCycles++;
+                    document.getElementById('cycle-count').textContent = `${state.reactorCycles}/5`;
+                    document.getElementById('timing-feedback').textContent = '✓ ¡Perfecto!';
+                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-green-400 font-bold';
+                    
+                    // Update energy bar
+                    document.getElementById('energy-level').style.height = `${(state.reactorCycles / 5) * 100}%`;
+                    
+                    sendMessage('reactor-update', { cycles: state.reactorCycles, fails: state.reactorFails });
+                    
+                    if (state.reactorCycles >= 5) {
+                        completeLevel2();
+                    }
+                } else {
+                    state.reactorFails++;
+                    state.totalErrors++;
+                    document.getElementById('reactor-fails').textContent = state.reactorFails;
+                    document.getElementById('overheat-warning').classList.remove('hidden');
+                    document.getElementById('timing-feedback').textContent = '✗ ¡Fuera de tiempo!';
+                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-red-400 font-bold';
+                    
+                    AudioEngine.playError();
+                    sendMessage('reactor-update', { cycles: state.reactorCycles, fails: state.reactorFails });
+                }
+                
+                setTimeout(() => {
+                    document.getElementById('timing-feedback').textContent = 'Espera la señal...';
+                    document.getElementById('timing-feedback').className = 'mt-4 text-center text-gray-500';
+                }, 1000);
+            });
+        }
+        
+        function setupLevel2B() {
+            // Start rhythm indicator
+            const rhythmCounter = document.getElementById('rhythm-counter');
+            let phase = 0;
+            
+            setInterval(() => {
+                phase = (phase + 0.05) % 1;
+                const brightness = Math.sin(phase * Math.PI * 2) * 0.5 + 0.5;
+                const size = 1 + brightness * 0.5;
+                rhythmCounter.style.opacity = 0.3 + brightness * 0.7;
+                rhythmCounter.style.transform = `scale(${size})`;
+                
+                // Flash at peak
+                if (phase > 0.48 && phase < 0.52) {
+                    rhythmCounter.textContent = '★';
+                    rhythmCounter.className = 'text-center text-6xl title-font text-green-400';
+                } else {
+                    rhythmCounter.textContent = '●';
+                    rhythmCounter.className = 'text-center text-6xl title-font text-orange-400';
+                }
+            }, 100);
+        }
+        
+        function updateReactorStatus(data) {
+            state.reactorCycles = data.cycles;
+            state.reactorFails = data.fails;
+            // Update UI on player B's screen if needed
+        }
+        
+        function completeLevel2() {
+            AudioEngine.playSuccess();
+            sendMessage('level-complete', { nextLevel: 3 });
+            setTimeout(() => transitionToLevel(3), 1500);
+        }
+        
+        // ============================================
+        // LEVEL 3: RADIO
+        // ============================================
+        function setupLevel3A() {
+            // Generate random pattern queue
+            const patternTypes = ['oxygen', 'door', 'power', 'vent'];
+            state.patternQueue = [...patternTypes].sort(() => Math.random() - 0.5);
+            state.currentPattern = state.patternQueue[0];
+            
+            const playBtn = document.getElementById('play-pattern-btn');
+            const patternVisual = document.getElementById('pattern-visual');
+            const switches = document.querySelectorAll('.radio-switch');
+            
+            playBtn.addEventListener('click', () => {
+                playCurrentPattern();
+            });
+            
+            switches.forEach(sw => {
+                sw.addEventListener('click', () => {
+                    const switchType = sw.dataset.switch;
+                    AudioEngine.playSpark();
+                    
+                    if (switchType === state.currentPattern) {
+                        state.signalsDecoded[switchType] = true;
+                        sw.classList.add('bg-green-600');
+                        sw.disabled = true;
+                        
+                        const decoded = Object.values(state.signalsDecoded).filter(v => v).length;
+                        document.getElementById('signals-decoded').textContent = decoded;
+                        
+                        sendMessage('signal-decoded', { signal: switchType });
+                        
+                        if (decoded >= 4) {
+                            completeLevel3();
+                        } else {
+                            // Next pattern
+                            state.patternQueue.shift();
+                            state.currentPattern = state.patternQueue[0];
+                        }
+                    } else {
+                        state.totalErrors++;
+                        AudioEngine.playError();
+                        showAlert('¡ERROR!', 'Interruptor incorrecto');
+                    }
+                });
+            });
+        }
+        
+        function playCurrentPattern() {
+            const pattern = state.patterns[state.currentPattern];
+            const patternVisual = document.getElementById('pattern-visual');
+            
+            // Show visual pattern
+            patternVisual.innerHTML = pattern.map(p => 
+                `<div class="w-6 h-6 rounded-full ${p === 'short' ? 'bg-cyan-400' : 'bg-cyan-600 w-12'} flex-shrink-0"></div>`
+            ).join('');
+            
+            // Play audio pattern
+            let delay = 0;
+            pattern.forEach(p => {
+                setTimeout(() => {
+                    if (p === 'short') {
+                        AudioEngine.playBeepShort();
+                    } else {
+                        AudioEngine.playBeepLong();
+                    }
+                }, delay);
+                delay += p === 'short' ? 300 : 700;
+            });
+            
+            sendMessage('pattern-playing', { pattern: state.currentPattern });
+        }
+        
+        function setupLevel3B() {
+            // Just display the translation table - already in HTML
+        }
+        
+        function updateSignalStatus(data) {
+            const signalEl = document.getElementById(`signal-${data.signal}`);
+            if (signalEl) {
+                signalEl.textContent = '✓ Decodificada';
+                signalEl.className = 'text-green-400';
+            }
+        }
+        
+        function completeLevel3() {
+            AudioEngine.playSuccess();
+            sendMessage('level-complete', { nextLevel: 4 });
+            setTimeout(() => transitionToLevel(4), 1500);
+        }
+        
+        // ============================================
+        // LEVEL 4: MAZE
+        // ============================================
+        function setupLevel4A() {
+            const mazeView = document.getElementById('maze-player-view');
+            state.playerPos = { x: 1, y: 1 };
+            
+            // Create player's view (no walls visible)
+            renderPlayerMaze();
+            
+            // Movement controls
+            document.querySelectorAll('.maze-move').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const dir = btn.dataset.dir;
+                    movePlayer(dir);
+                });
+            });
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (state.currentLevel !== 4) return;
+                const keyMap = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+                if (keyMap[e.key]) {
+                    e.preventDefault();
+                    movePlayer(keyMap[e.key]);
+                }
+            });
+        }
+        
+        function renderPlayerMaze() {
+            const mazeView = document.getElementById('maze-player-view');
+            mazeView.innerHTML = '';
+            
+            for (let y = 0; y < 7; y++) {
+                for (let x = 0; x < 7; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'maze-cell bg-gray-800';
+                    
+                    if (x === state.playerPos.x && y === state.playerPos.y) {
+                        cell.classList.add('player');
+                    }
+                    
+                    mazeView.appendChild(cell);
+                }
             }
             
-            // Reset all emergency effects
-            resetEmergencyEffects();
+            document.getElementById('player-pos').textContent = `(${state.playerPos.x}, ${state.playerPos.y})`;
+        }
+        
+        function movePlayer(dir) {
+            const newPos = { ...state.playerPos };
             
-            // Remove static noise overlay
-            const staticNoise = document.getElementById('static-noise-overlay');
-            if (staticNoise) staticNoise.remove();
+            switch(dir) {
+                case 'up': newPos.y--; break;
+                case 'down': newPos.y++; break;
+                case 'left': newPos.x--; break;
+                case 'right': newPos.x++; break;
+            }
             
-            // Remove emergency warning
-            const emergencyWarning = document.getElementById('emergency-warning');
-            if (emergencyWarning) emergencyWarning.remove();
+            // Bounds check
+            if (newPos.x < 0 || newPos.x >= 7 || newPos.y < 0 || newPos.y >= 7) {
+                AudioEngine.playError();
+                return;
+            }
             
+            const cell = state.mazeLayout[newPos.y][newPos.x];
+            
+            sendMessage('player-moved', { pos: newPos, dir });
+            
+            if (cell === 1) {
+                // Wall
+                state.totalErrors++;
+                AudioEngine.playError();
+                showAlert('¡PARED!', 'No puedes pasar');
+            } else if (cell === 2) {
+                // Mine
+                state.totalErrors += 3;
+                AudioEngine.playError();
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+                showAlert('💥 ¡MINA!', 'Vuelves al inicio');
+                state.playerPos = { x: 1, y: 1 };
+                renderPlayerMaze();
+            } else if (cell === 3) {
+                // Exit - Success!
+                state.playerPos = newPos;
+                renderPlayerMaze();
+                AudioEngine.playSuccess();
+                completeLevel4();
+            } else {
+                // Path - OK
+                state.playerPos = newPos;
+                renderPlayerMaze();
+                AudioEngine.playSpark();
+            }
+        }
+        
+        function setupLevel4B() {
+            const mazeView = document.getElementById('maze-tech-view');
+            mazeView.innerHTML = '';
+            
+            // Render full maze with walls and mines
+            for (let y = 0; y < 7; y++) {
+                for (let x = 0; x < 7; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'maze-cell';
+                    
+                    const type = state.mazeLayout[y][x];
+                    if (type === 1) {
+                        cell.classList.add('wall');
+                    } else if (type === 2) {
+                        cell.classList.add('mine');
+                    } else if (type === 3) {
+                        cell.classList.add('exit');
+                    } else {
+                        cell.classList.add('bg-gray-700');
+                    }
+                    
+                    mazeView.appendChild(cell);
+                }
+            }
+        }
+        
+        function handlePlayerMove(data) {
+            // Update technician's position display
+            document.getElementById('tech-pos-display').textContent = `(${data.pos.x}, ${data.pos.y})`;
+        }
+        
+        function handleMazeResult(data) {
+            if (data.result === 'wall') {
+                AudioEngine.playError();
+                showAlert('¡PARED!', 'El operador chocó');
+            } else if (data.result === 'mine') {
+                AudioEngine.playError();
+                showAlert('💥 ¡MINA!', 'El operador pisó una mina');
+            }
+        }
+        
+        function completeLevel4() {
+            sendMessage('game-complete');
+            showFinalSuccess();
+        }
+        
+        // ============================================
+        // FINAL SUCCESS
+        // ============================================
+        function showFinalSuccess() {
+            AudioEngine.stopAmbient();
             playerAScreen.classList.add('hidden');
             playerBScreen.classList.add('hidden');
             successScreen.classList.remove('hidden');
-            document.getElementById('final-errors').textContent = state.errorCount;
             
-            // Calculate and show time
+            document.getElementById('final-errors').textContent = state.totalErrors;
+            
             if (state.startTime) {
                 const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById('final-time').textContent = timeStr;
-                
-                // Add rating based on performance
-                let rating = '';
-                if (state.errorCount === 0 && elapsed < 60) {
-                    rating = '⭐⭐⭐ ¡PERFECTOS!';
-                } else if (state.errorCount <= 2 && elapsed < 90) {
-                    rating = '⭐⭐ ¡Excelente equipo!';
-                } else if (state.errorCount <= 4 && elapsed < 120) {
-                    rating = '⭐ Buen trabajo';
-                } else {
-                    rating = '¡Lo lograron... por poco!';
-                }
-                
-                const ratingDiv = document.createElement('p');
-                ratingDiv.className = 'text-yellow-400 text-2xl mb-4 title-font';
-                ratingDiv.textContent = rating;
-                document.getElementById('stats-display').before(ratingDiv);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                document.getElementById('final-time').textContent = 
+                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
+            
+            AudioEngine.playSuccess();
         }
+        
+        // ============================================
+        // FULLSCREEN
+        // ============================================
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen?.() || 
+                document.documentElement.webkitRequestFullscreen?.();
+                document.getElementById('fullscreen-btn').textContent = '✕';
+            } else {
+                document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+                document.getElementById('fullscreen-btn').textContent = '⛶';
+            }
+        });
         
         // Initialize
         init();
-        
-        // ============================================
-        // FULLSCREEN FUNCTIONALITY
-        // ============================================
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        
-        fullscreenBtn.addEventListener('click', () => {
-            toggleFullscreen();
-        });
-        
-        function toggleFullscreen() {
-            if (!document.fullscreenElement && 
-                !document.webkitFullscreenElement && 
-                !document.mozFullScreenElement &&
-                !document.msFullscreenElement) {
-                // Enter fullscreen
-                const elem = document.documentElement;
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen(); // Safari
-                } else if (elem.mozRequestFullScreen) {
-                    elem.mozRequestFullScreen(); // Firefox
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen(); // IE/Edge
-                }
-                fullscreenBtn.textContent = '✕';
-                fullscreenBtn.title = 'Salir de pantalla completa';
-            } else {
-                // Exit fullscreen
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                fullscreenBtn.textContent = '⛶';
-                fullscreenBtn.title = 'Pantalla completa';
-            }
-        }
-        
-        // Update button when fullscreen changes (e.g., user presses Escape)
-        document.addEventListener('fullscreenchange', updateFullscreenButton);
-        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
-        document.addEventListener('mozfullscreenchange', updateFullscreenButton);
-        document.addEventListener('MSFullscreenChange', updateFullscreenButton);
-        
-        function updateFullscreenButton() {
-            if (document.fullscreenElement || 
-                document.webkitFullscreenElement || 
-                document.mozFullScreenElement ||
-                document.msFullscreenElement) {
-                fullscreenBtn.textContent = '✕';
-                fullscreenBtn.title = 'Salir de pantalla completa';
-            } else {
-                fullscreenBtn.textContent = '⛶';
-                fullscreenBtn.title = 'Pantalla completa';
-            }
-        }
-        
-        // Lock screen orientation to portrait on mobile (if supported)
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch(() => {
-                // Orientation lock not supported or not allowed
-                console.log('Screen orientation lock not available');
-            });
-        }
     </script>
 </body>
 </html>
