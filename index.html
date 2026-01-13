@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Búnker - Juego Cooperativo Asimétrico</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+        
+        * {
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .title-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .scanline {
+            background: linear-gradient(
+                transparent 50%,
+                rgba(0, 0, 0, 0.1) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+        
+        .glow-red {
+            box-shadow: 0 0 20px #ff0000, 0 0 40px #ff000066, inset 0 0 20px #ff000033;
+        }
+        
+        .glow-green {
+            box-shadow: 0 0 20px #00ff00, 0 0 40px #00ff0066, inset 0 0 20px #00ff0033;
+        }
+        
+        .glow-blue {
+            box-shadow: 0 0 15px #00aaff, 0 0 30px #00aaff66;
+        }
+        
+        .glow-yellow {
+            box-shadow: 0 0 20px #ffcc00, 0 0 40px #ffcc0066, inset 0 0 20px #ffcc0033;
+        }
+        
+        .spark {
+            animation: spark 0.1s infinite;
+        }
+        
+        @keyframes spark {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            41% { opacity: 1; }
+            42% { opacity: 0.8; }
+            43% { opacity: 1; }
+            45% { opacity: 0.3; }
+            46% { opacity: 1; }
+        }
+        
+        .flicker {
+            animation: flicker 3s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        .wire {
+            cursor: grab;
+            transition: all 0.2s;
+        }
+        
+        .wire:hover {
+            filter: brightness(1.3);
+        }
+        
+        .wire.dragging {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        .wire.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+        
+        .terminal {
+            transition: all 0.3s;
+        }
+        
+        .terminal:hover {
+            transform: scale(1.1);
+        }
+        
+        .terminal.highlight {
+            animation: pulse 0.5s infinite;
+        }
+        
+        .terminal.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .connected {
+            filter: brightness(1.5) saturate(1.2);
+        }
+        
+        @keyframes doorOpen {
+            0% { transform: scaleX(1); }
+            100% { transform: scaleX(0); }
+        }
+        
+        .door-open-left {
+            animation: doorOpen 2s ease-in-out forwards;
+            transform-origin: left;
+        }
+        
+        .door-open-right {
+            animation: doorOpen 2s ease-in-out forwards;
+            transform-origin: right;
+        }
+        
+        .manual-page {
+            background: linear-gradient(135deg, #f4e4bc 0%, #e8d5a3 100%);
+            box-shadow: 
+                inset 0 0 30px rgba(139, 119, 42, 0.3),
+                5px 5px 15px rgba(0,0,0,0.3);
+            transition: filter 2s ease-out;
+        }
+        
+        .manual-page.dimmed {
+            filter: brightness(0.6);
+        }
+        
+        .manual-page.very-dimmed {
+            filter: brightness(0.3);
+        }
+        
+        .stamp {
+            transform: rotate(-15deg);
+            opacity: 0.7;
+        }
+        
+        .connection-line {
+            stroke-dasharray: 5, 5;
+            animation: dash 0.5s linear infinite;
+        }
+        
+        @keyframes dash {
+            to { stroke-dashoffset: -10; }
+        }
+        
+        /* Coffee stain effect */
+        .coffee-stain {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, 
+                rgba(101, 67, 33, 0.4) 0%, 
+                rgba(139, 90, 43, 0.3) 30%,
+                rgba(160, 120, 60, 0.2) 50%,
+                transparent 70%);
+            pointer-events: none;
+        }
+        
+        /* Burn mark effect */
+        .burn-mark {
+            position: absolute;
+            background: radial-gradient(ellipse at center,
+                rgba(20, 10, 5, 0.9) 0%,
+                rgba(40, 20, 10, 0.7) 30%,
+                rgba(60, 30, 15, 0.4) 60%,
+                transparent 80%);
+            pointer-events: none;
+            filter: blur(2px);
+        }
+        
+        /* Error flash animation */
+        @keyframes errorFlash {
+            0%, 100% { background-color: transparent; }
+            25%, 75% { background-color: rgba(255, 0, 0, 0.3); }
+        }
+        
+        .error-flash {
+            animation: errorFlash 0.5s ease-in-out;
+        }
+        
+        /* Alert popup */
+        @keyframes alertPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .alert-popup {
+            animation: alertPulse 0.3s ease-in-out infinite;
+        }
+        
+        /* Ambient glow for emergency */
+        @keyframes emergencyGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        .emergency-ambient {
+            animation: emergencyGlow 2s ease-in-out infinite;
+        }
+        
+        /* Code display flashing */
+        @keyframes codeFlash {
+            0%, 100% { opacity: 1; text-shadow: 0 0 20px currentColor; }
+            50% { opacity: 0.3; text-shadow: none; }
+        }
+        
+        .code-flash {
+            animation: codeFlash 0.5s infinite;
+        }
+        
+        /* Lockdown overlay */
+        @keyframes lockdownPulse {
+            0%, 100% { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; }
+            50% { border-color: #ff6600; box-shadow: 0 0 40px #ff6600; }
+        }
+        
+        .lockdown-border {
+            animation: lockdownPulse 1s infinite;
+        }
+        
+        /* Keypad button */
+        .keypad-btn {
+            transition: all 0.1s;
+        }
+        
+        .keypad-btn:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+        
+        .keypad-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Reveal animation for keypad */
+        @keyframes revealKeypad {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .keypad-reveal {
+            animation: revealKeypad 0.5s ease-out forwards;
+        }
+        
+        /* Coffee stain hiding keypad initially */
+        .keypad-coffee-stain {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: radial-gradient(ellipse at center,
+                rgba(80, 50, 20, 0.95) 0%,
+                rgba(101, 67, 33, 0.9) 40%,
+                rgba(139, 90, 43, 0.85) 70%,
+                rgba(160, 120, 60, 0.8) 100%);
+            transition: opacity 1s, transform 1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .keypad-coffee-stain.revealed {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+        
+        /* Screen shake effect */
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-2px, -1px) rotate(-0.5deg); }
+            20% { transform: translate(2px, 1px) rotate(0.5deg); }
+            30% { transform: translate(-1px, 2px) rotate(-0.5deg); }
+            40% { transform: translate(1px, -1px) rotate(0.5deg); }
+            50% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+            60% { transform: translate(2px, -1px) rotate(0.5deg); }
+            70% { transform: translate(-1px, -2px) rotate(-0.5deg); }
+            80% { transform: translate(1px, 2px) rotate(0.5deg); }
+            90% { transform: translate(-1px, 1px) rotate(-0.5deg); }
+        }
+        
+        .screen-shake {
+            animation: screenShake 0.3s ease-in-out;
+        }
+        
+        /* Critical warning pulsing */
+        @keyframes criticalPulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+                border-color: #ef4444;
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+                border-color: #f97316;
+            }
+        }
+        
+        .critical-state {
+            animation: criticalPulse 0.5s ease-in-out infinite;
+        }
+        
+        /* Tension bar glow */
+        #tension-bar {
+            box-shadow: 0 0 10px currentColor;
+        }
+        
+        /* Emergency text flicker */
+        @keyframes textFlicker {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; }
+            93% { opacity: 0.3; }
+            94% { opacity: 1; }
+            96% { opacity: 0.5; }
+            97% { opacity: 1; }
+        }
+        
+        .text-flicker {
+            animation: textFlicker 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen overflow-hidden">
+    <!-- Scanline overlay -->
+    <div class="scanline fixed inset-0 z-50 pointer-events-none"></div>
+    
+    <!-- Error flash overlay -->
+    <div id="error-overlay" class="fixed inset-0 z-45 pointer-events-none"></div>
+    
+    <!-- Alert popup for Player B -->
+    <div id="alert-popup" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-900 border-2 border-red-500 px-6 py-3 rounded-lg alert-popup">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+                <p class="text-red-300 font-bold">¡SOBRECARGA DETECTADA!</p>
+                <p class="text-red-400 text-sm">Conexión incorrecta en el panel</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lockdown alert for Player B -->
+    <div id="lockdown-alert" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-900 border-2 border-yellow-500 px-6 py-3 rounded-lg">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🔒</span>
+            <div>
+                <p class="text-yellow-300 font-bold">¡SISTEMA BLOQUEADO!</p>
+                <p class="text-yellow-400 text-sm">Protocolo de seguridad activado - Usa el teclado</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LOBBY SCREEN -->
+    <div id="lobby-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="text-center">
+            <!-- Logo -->
+            <div class="mb-8">
+                <h1 class="title-font text-6xl md:text-8xl font-black text-red-500 glow-red tracking-wider flicker">
+                    EL BÚNKER
+                </h1>
+                <p class="text-gray-400 mt-4 text-lg tracking-widest">JUEGO COOPERATIVO ASIMÉTRICO</p>
+            </div>
+            
+            <!-- Main panel -->
+            <div class="bg-gray-800 border-2 border-gray-600 rounded-lg p-8 max-w-md mx-auto">
+                <div class="space-y-6">
+                    <!-- Status indicator -->
+                    <div id="lobby-status" class="flex items-center justify-center gap-3 text-gray-400">
+                        <div class="w-3 h-3 bg-green-500 rounded-full pulse"></div>
+                        <span>SISTEMA OPERATIVO</span>
+                    </div>
+                    
+                    <!-- Create game button -->
+                    <button id="create-btn" class="w-full bg-red-600 hover:bg-red-500 text-white py-4 px-8 rounded border-2 border-red-400 glow-red transition-all hover:scale-105 title-font text-xl tracking-wider">
+                        ⚡ CREAR PARTIDA
+                    </button>
+                    
+                    <!-- Game link section (hidden initially) -->
+                    <div id="link-section" class="hidden space-y-4">
+                        <div class="bg-gray-900 p-4 rounded border border-gray-600">
+                            <p class="text-gray-400 text-sm mb-2">ENLACE DE INVITACIÓN:</p>
+                            <div class="flex gap-2">
+                                <input id="game-link" type="text" readonly class="flex-1 bg-gray-700 text-green-400 px-3 py-2 rounded text-sm border border-gray-600">
+                                <button id="copy-btn" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-white transition-all">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                        <div id="waiting-indicator" class="text-yellow-400 text-sm animate-pulse">
+                            ⏳ Esperando a tu compañero...
+                        </div>
+                    </div>
+                    
+                    <!-- Join section -->
+                    <div id="join-section" class="hidden">
+                        <div class="bg-green-900/30 border border-green-500 p-4 rounded">
+                            <p class="text-green-400 mb-3">🔗 Partida encontrada</p>
+                            <button id="join-btn" class="w-full bg-green-600 hover:bg-green-500 text-white py-3 px-6 rounded border border-green-400 transition-all hover:scale-105 title-font">
+                                UNIRSE COMO TÉCNICO
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Connection error -->
+                    <div id="connection-error" class="hidden bg-red-900/30 border border-red-500 p-4 rounded">
+                        <p class="text-red-400">❌ Error de conexión. Intenta de nuevo.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="mt-8 text-gray-500 text-sm max-w-lg mx-auto">
+                <p class="mb-2">🎮 Un jugador verá los <span class="text-red-400">MECANISMOS</span></p>
+                <p class="mb-2">📖 El otro verá el <span class="text-yellow-400">MANUAL</span></p>
+                <p class="mb-2">🗣️ Deben <span class="text-green-400">COMUNICARSE</span> para escapar</p>
+                <p class="mt-4 text-xs text-gray-600">🌐 Funciona en dispositivos diferentes - ¡envía el link a un amigo!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PLAYER A SCREEN - MECHANISMS -->
+    <div id="player-a-screen" class="hidden min-h-screen bg-gray-900 relative">
+        <!-- Emergency ambient glow -->
+        <div id="emergency-glow" class="absolute inset-0 bg-red-900/20 emergency-ambient pointer-events-none"></div>
+        
+        <!-- Background bunker -->
+        <div class="absolute inset-0 bg-gradient-to-b from-gray-800 to-gray-900">
+            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><rect fill=\"none\" stroke=\"%23666\" stroke-width=\"0.5\" width=\"100\" height=\"100\"/></svg>');"></div>
+        </div>
+        
+        <!-- Header -->
+        <div class="relative z-10 p-4 flex justify-between items-center border-b border-gray-700 bg-gray-800/80">
+            <div class="flex items-center gap-4">
+                <div class="w-3 h-3 bg-red-500 rounded-full spark"></div>
+                <span class="text-red-400 title-font">OPERADOR</span>
+                <span id="phase-indicator-a" class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-400">FASE 1</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="sound-toggle-a" class="text-gray-400 hover:text-white transition-all" title="Sonido">
+                    🔊
+                </button>
+                <span id="connection-status-a" class="text-yellow-400">● Conectando...</span>
+            </div>
+        </div>
+        
+        <!-- Main panel area -->
+        <div class="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+            <div id="main-panel-a" class="bg-gray-800 border-4 border-gray-600 rounded-lg p-8 max-w-2xl w-full shadow-2xl">
+                <!-- Panel title -->
+                <div class="text-center mb-6">
+                    <h2 class="title-font text-2xl text-yellow-500">⚠️ PANEL ELÉCTRICO DAÑADO</h2>
+                    <p class="text-gray-400 text-sm mt-2">Conecta los cables correctamente para abrir la puerta</p>
+                </div>
+                
+                <!-- Sparks animation -->
+                <div id="sparks" class="absolute top-20 right-20 text-4xl spark">⚡</div>
+                
+                <!-- Lockdown code display (hidden initially) -->
+                <div id="lockdown-display" class="hidden mb-6 bg-black rounded-lg p-4 border-4 border-red-600 lockdown-border">
+                    <div class="text-center">
+                        <p class="text-red-500 text-xs mb-2 title-font">⚠️ SISTEMA BLOQUEADO - COMUNICA ESTE CÓDIGO</p>
+                        <div id="lockdown-code" class="text-4xl title-font text-yellow-400 code-flash tracking-widest">
+                            ----
+                        </div>
+                        <p class="text-gray-500 text-xs mt-2">El técnico debe ingresar el código para continuar</p>
+                    </div>
+                </div>
+                
+                <!-- Wire connection area -->
+                <div id="wire-area" class="relative bg-gray-900 rounded-lg p-6 border-2 border-gray-700">
+                    <svg id="connection-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+                    
+                    <div class="flex justify-between items-center">
+                        <!-- Wires (left side) -->
+                        <div class="space-y-4">
+                            <p class="text-gray-500 text-xs mb-4 text-center">CABLES</p>
+                            <div id="wire-red" class="wire w-24 h-12 bg-gradient-to-r from-red-700 to-red-500 rounded-r-full border-2 border-red-400 flex items-center justify-end pr-3 cursor-pointer" data-color="red">
+                                <div class="w-4 h-4 bg-red-300 rounded-full"></div>
+                            </div>
+                            <div id="wire-blue" class="wire w-24 h-12 bg-gradient-to-r from-blue-700 to-blue-500 rounded-r-full border-2 border-blue-400 flex items-center justify-end pr-3 cursor-pointer" data-color="blue">
+                                <div class="w-4 h-4 bg-blue-300 rounded-full"></div>
+                            </div>
+                            <div id="wire-green" class="wire w-24 h-12 bg-gradient-to-r from-green-700 to-green-500 rounded-r-full border-2 border-green-400 flex items-center justify-end pr-3 cursor-pointer" data-color="green">
+                                <div class="w-4 h-4 bg-green-300 rounded-full"></div>
+                            </div>
+                            <div id="wire-yellow" class="wire w-24 h-12 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-r-full border-2 border-yellow-400 flex items-center justify-end pr-3 cursor-pointer" data-color="yellow">
+                                <div class="w-4 h-4 bg-yellow-200 rounded-full"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Terminals (right side) -->
+                        <div class="space-y-4">
+                            <p class="text-gray-500 text-xs mb-4 text-center">BORNES</p>
+                            <div id="terminal-1" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="1">
+                                1
+                            </div>
+                            <div id="terminal-2" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="2">
+                                2
+                            </div>
+                            <div id="terminal-3" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="3">
+                                3
+                            </div>
+                            <div id="terminal-4" class="terminal w-16 h-12 bg-gray-700 rounded-l-lg border-2 border-gray-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-gray-600" data-terminal="4">
+                                4
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current connections display -->
+                <div id="connections-display" class="mt-6 grid grid-cols-2 gap-2 text-sm">
+                    <div class="bg-gray-900 p-2 rounded border border-gray-700 text-gray-500">
+                        <span class="text-red-400">●</span> Rojo → <span id="red-conn">---</span>
+                    </div>
+                    <div class="bg-gray-900 p-2 rounded border border-gray-700 text-gray-500">
+                        <span class="text-blue-400">●</span> Azul → <span id="blue-conn">---</span>
+                    </div>
+                    <div class="bg-gray-900 p-2 rounded border border-gray-700 text-gray-500">
+                        <span class="text-green-400">●</span> Verde → <span id="green-conn">---</span>
+                    </div>
+                    <div class="bg-gray-900 p-2 rounded border border-gray-700 text-gray-500">
+                        <span class="text-yellow-400">●</span> Amarillo → <span id="yellow-conn">---</span>
+                    </div>
+                </div>
+                
+                <!-- Error counter -->
+                <div id="error-counter" class="mt-4 text-center text-gray-500 text-sm">
+                    Errores: <span id="error-count" class="text-red-400">0</span>
+                </div>
+                
+                <!-- Tension meter (appears during emergency) -->
+                <div id="tension-meter" class="hidden mt-4">
+                    <div class="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <span>⚡ INESTABILIDAD DEL SISTEMA</span>
+                        <span id="tension-time" class="text-red-400">00:00</span>
+                    </div>
+                    <div class="h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-700">
+                        <div id="tension-bar" class="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <p id="tension-warning" class="text-center text-xs mt-1 text-gray-500">Sistema estable</p>
+                </div>
+                
+                <!-- Reset button -->
+                <button id="reset-wires" class="mt-4 w-full bg-gray-700 hover:bg-gray-600 text-gray-300 py-2 rounded border border-gray-600 transition-all">
+                    🔄 Reiniciar conexiones
+                </button>
+            </div>
+        </div>
+        
+        <!-- Door overlay (shown when solved) -->
+        <div id="door-a" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80">
+            <div class="relative w-80 h-96">
+                <div id="door-left-a" class="absolute left-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
+                <div id="door-right-a" class="absolute right-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🚪</div>
+                        <p class="text-green-400 title-font text-xl">¡PUERTA ABIERTA!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PLAYER B SCREEN - MANUAL -->
+    <div id="player-b-screen" class="hidden min-h-screen bg-amber-900 relative overflow-auto">
+        <!-- Desk texture background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-amber-800 to-amber-950"></div>
+        
+        <!-- Power failure overlay -->
+        <div id="power-failure-overlay" class="absolute inset-0 bg-black pointer-events-none z-20 transition-opacity duration-2000" style="opacity: 0;"></div>
+        
+        <!-- Header -->
+        <div class="relative z-10 p-4 flex justify-between items-center border-b border-amber-700 bg-amber-800/80">
+            <div class="flex items-center gap-4">
+                <div class="w-3 h-3 bg-green-500 rounded-full pulse"></div>
+                <span class="text-amber-200 title-font">TÉCNICO</span>
+                <span id="phase-indicator-b" class="text-xs bg-amber-700 px-2 py-1 rounded text-amber-300">FASE 1</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="sound-toggle-b" class="text-amber-300 hover:text-white transition-all" title="Sonido">
+                    🔊
+                </button>
+                <span id="connection-status-b" class="text-yellow-400">● Conectando...</span>
+            </div>
+        </div>
+        
+        <!-- Manual content -->
+        <div class="relative z-10 p-8 flex justify-center">
+            <div id="manual-page" class="manual-page rounded-lg p-8 max-w-2xl w-full transform rotate-1 relative">
+                <!-- Coffee stains -->
+                <div class="coffee-stain" style="width: 120px; height: 100px; top: 60px; right: 80px;"></div>
+                <div class="coffee-stain" style="width: 80px; height: 70px; bottom: 200px; left: 40px;"></div>
+                <div class="coffee-stain" style="width: 60px; height: 50px; top: 300px; right: 150px;"></div>
+                
+                <!-- Burn marks -->
+                <div class="burn-mark" style="width: 100px; height: 40px; top: 420px; left: 120px; transform: rotate(-10deg);"></div>
+                <div class="burn-mark" style="width: 70px; height: 30px; bottom: 320px; right: 100px; transform: rotate(5deg);"></div>
+                
+                <!-- Confidential stamp -->
+                <div class="stamp absolute top-4 right-4 border-4 border-red-700 text-red-700 px-4 py-2 font-bold text-xl rounded z-20">
+                    CONFIDENCIAL
+                </div>
+                
+                <!-- Manual header -->
+                <div class="text-center mb-8 border-b-2 border-amber-700 pb-4 relative z-10">
+                    <h2 class="title-font text-3xl text-gray-800">📋 MANUAL TÉCNICO</h2>
+                    <p class="text-gray-600 mt-2">Sistema Eléctrico del Búnker - Sección 7B</p>
+                    <p class="text-red-700 text-sm mt-1">⚠️ NO COMPARTIR CON PERSONAL NO AUTORIZADO</p>
+                </div>
+                
+                <!-- Diagram -->
+                <div class="bg-white/50 rounded-lg p-6 mb-6 border-2 border-amber-600 relative z-10">
+                    <h3 class="text-gray-800 font-bold mb-4 text-center">DIAGRAMA DE CONEXIONES</h3>
+                    
+                    <svg viewBox="0 0 400 250" class="w-full max-w-md mx-auto">
+                        <!-- Background grid -->
+                        <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ddd" stroke-width="0.5"/>
+                            </pattern>
+                            <!-- Coffee stain filter -->
+                            <filter id="stain1" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+                            </filter>
+                        </defs>
+                        <rect width="400" height="250" fill="url(#grid)"/>
+                        
+                        <!-- Simulated damage/stain on diagram -->
+                        <ellipse cx="280" cy="130" rx="45" ry="35" fill="rgba(101, 67, 33, 0.25)" filter="url(#stain1)"/>
+                        
+                        <!-- Power source -->
+                        <rect x="20" y="100" width="60" height="50" fill="#333" stroke="#000" stroke-width="2"/>
+                        <text x="50" y="130" text-anchor="middle" fill="white" font-size="12">FUENTE</text>
+                        <text x="50" y="145" text-anchor="middle" fill="yellow" font-size="10">220V</text>
+                        
+                        <!-- Wires coming out -->
+                        <line x1="80" y1="105" x2="150" y2="40" stroke="red" stroke-width="4"/>
+                        <line x1="80" y1="115" x2="150" y2="90" stroke="blue" stroke-width="4"/>
+                        <line x1="80" y1="135" x2="150" y2="160" stroke="green" stroke-width="4"/>
+                        <line x1="80" y1="145" x2="150" y2="210" stroke="yellow" stroke-width="4"/>
+                        
+                        <!-- Connection points labels -->
+                        <circle cx="150" cy="40" r="10" fill="red" stroke="#800" stroke-width="2"/>
+                        <circle cx="150" cy="90" r="10" fill="blue" stroke="#008" stroke-width="2"/>
+                        <circle cx="150" cy="160" r="10" fill="green" stroke="#080" stroke-width="2"/>
+                        <circle cx="150" cy="210" r="10" fill="yellow" stroke="#880" stroke-width="2"/>
+                        
+                        <!-- Arrows and terminal connections -->
+                        <path d="M 165 40 L 250 40" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+                        <path d="M 165 90 L 250 160" stroke="#333" stroke-width="2"/>
+                        <path d="M 165 160 L 250 90" stroke="#333" stroke-width="2"/>
+                        <path d="M 165 210 L 250 210" stroke="#333" stroke-width="2"/>
+                        
+                        <!-- Terminals -->
+                        <rect x="250" y="25" width="50" height="30" fill="#555" stroke="#333" stroke-width="2" rx="5"/>
+                        <text x="275" y="45" text-anchor="middle" fill="white" font-weight="bold">1</text>
+                        
+                        <rect x="250" y="75" width="50" height="30" fill="#555" stroke="#333" stroke-width="2" rx="5"/>
+                        <text x="275" y="95" text-anchor="middle" fill="white" font-weight="bold">2</text>
+                        
+                        <rect x="250" y="145" width="50" height="30" fill="#555" stroke="#333" stroke-width="2" rx="5"/>
+                        <text x="275" y="165" text-anchor="middle" fill="white" font-weight="bold">3</text>
+                        
+                        <rect x="250" y="195" width="50" height="30" fill="#555" stroke="#333" stroke-width="2" rx="5"/>
+                        <text x="275" y="215" text-anchor="middle" fill="white" font-weight="bold">4</text>
+                        
+                        <!-- Voltage annotations (some obscured) -->
+                        <text x="320" y="45" fill="#c00" font-size="11" font-weight="bold">55V ⚡</text>
+                        <text x="320" y="95" fill="#c00" font-size="11" font-weight="bold">1̶1̶0̶V̶ ⚡</text>
+                        <text x="320" y="165" fill="#c00" font-size="11" font-weight="bold">165V ⚡</text>
+                        <text x="320" y="215" fill="#c00" font-size="11" font-weight="bold">2̶2̶0̶V̶ ⚡</text>
+                    </svg>
+                    
+                    <p class="text-center text-gray-500 text-xs mt-2 italic">* Algunos valores pueden estar dañados por exposición al fuego</p>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="bg-amber-100 rounded-lg p-4 border-2 border-amber-400 mb-6 relative z-10">
+                    <h3 class="text-gray-800 font-bold mb-3">📝 INSTRUCCIONES DE CONEXIÓN:</h3>
+                    <ul class="text-gray-700 space-y-2 text-sm">
+                        <li>• El cable <span class="font-bold text-red-600">ROJO</span> debe conectarse al borne <span class="font-bold">1</span> (55V)</li>
+                        <li>• El cable <span class="font-bold text-blue-600">AZUL</span> debe conectarse al borne <span class="font-bold">3</span> (voltaje <span class="bg-amber-800/30 px-1">ilegible</span>)</li>
+                        <li>• El cable <span class="font-bold text-green-600">VERDE</span> debe conectarse al borne <span class="font-bold">2</span> (<span class="bg-amber-800/30 px-1">pa̶r̶c̶i̶a̶l̶</span>)</li>
+                        <li>• El cable <span class="font-bold text-yellow-600">AMARILLO</span> debe conectarse al borne <span class="font-bold">4</span> (máx. voltaje)</li>
+                    </ul>
+                </div>
+                
+                <!-- Warning -->
+                <div class="bg-red-100 rounded-lg p-4 border-2 border-red-400 relative z-10">
+                    <p class="text-red-800 text-sm">
+                        <span class="font-bold">⚠️ ADVERTENCIA:</span> Una conexión incorrecta causará un cortocircuito y activará la alarma de emergencia. 
+                        Comunique claramente las instrucciones al operador del panel.
+                    </p>
+                </div>
+                
+                <!-- Handwritten note -->
+                <div class="mt-4 bg-yellow-200 p-3 rounded shadow-md transform -rotate-2 relative z-10" style="font-family: 'Comic Sans MS', cursive;">
+                    <p class="text-gray-800 text-sm">Nota: Si las chispas aumentan, ¡van por buen camino! - J.M.</p>
+                </div>
+                
+                <!-- Security Keypad Section (hidden under coffee stain) -->
+                <div id="security-keypad-container" class="hidden mt-6 relative z-10">
+                    <div id="security-keypad" class="bg-gray-900 rounded-lg p-4 border-2 border-red-500 relative overflow-hidden">
+                        <!-- Coffee stain covering keypad -->
+                        <div id="keypad-coffee-stain" class="keypad-coffee-stain z-30">
+                            <div class="text-center">
+                                <p class="text-amber-200/60 text-xs">☕ Mancha sospechosa...</p>
+                                <p class="text-amber-100/40 text-xs mt-1">Toca para limpiar</p>
+                            </div>
+                        </div>
+                        
+                        <p class="text-red-500 text-xs mb-3 text-center title-font">🔒 PROTOCOLO DE REINICIO</p>
+                        <p class="text-gray-400 text-xs mb-3 text-center">Solicita el código al operador del panel</p>
+                        
+                        <div id="keypad-display" class="w-full bg-black text-green-500 text-center font-bold text-2xl py-3 rounded mb-3 title-font tracking-widest border border-green-900">
+                            ----
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="1">1</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="2">2</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="3">3</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="4">4</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="5">5</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="6">6</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="7">7</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="8">8</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="9">9</button>
+                            <button class="keypad-btn bg-red-700 hover:bg-red-600 text-white py-3 rounded font-bold text-xl" data-num="clear">✕</button>
+                            <button class="keypad-btn bg-gray-700 hover:bg-gray-600 text-white py-3 rounded font-bold text-xl" data-num="0">0</button>
+                            <button class="keypad-btn bg-green-700 hover:bg-green-600 text-white py-3 rounded font-bold text-xl" data-num="enter">✓</button>
+                        </div>
+                        
+                        <p id="keypad-status" class="text-center text-gray-500 text-xs mt-3">Esperando código...</p>
+                    </div>
+                </div>
+                
+                <!-- Live status from Player A -->
+                <div class="mt-6 bg-gray-800 rounded-lg p-4 border-2 border-gray-600 relative z-10">
+                    <h3 class="text-green-400 font-bold mb-3">📡 ESTADO EN TIEMPO REAL:</h3>
+                    <div id="live-status" class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-gray-900 p-2 rounded text-gray-400">
+                            <span class="text-red-400">●</span> Rojo → <span id="live-red">---</span>
+                        </div>
+                        <div class="bg-gray-900 p-2 rounded text-gray-400">
+                            <span class="text-blue-400">●</span> Azul → <span id="live-blue">---</span>
+                        </div>
+                        <div class="bg-gray-900 p-2 rounded text-gray-400">
+                            <span class="text-green-400">●</span> Verde → <span id="live-green">---</span>
+                        </div>
+                        <div class="bg-gray-900 p-2 rounded text-gray-400">
+                            <span class="text-yellow-400">●</span> Amarillo → <span id="live-yellow">---</span>
+                        </div>
+                    </div>
+                    <div id="progress-indicator" class="mt-3 text-center text-gray-400">
+                        Conexiones correctas: <span id="correct-count">0</span>/4
+                    </div>
+                    <div id="error-display-b" class="mt-2 text-center text-red-400 text-sm">
+                        Errores detectados: <span id="error-count-b">0</span>
+                    </div>
+                    <div id="lockdown-status-b" class="hidden mt-2 text-center text-yellow-400 text-sm">
+                        🔒 Sistema bloqueado - Ingresa el código
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Door overlay (shown when solved) -->
+        <div id="door-b" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80">
+            <div class="relative w-80 h-96">
+                <div id="door-left-b" class="absolute left-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
+                <div id="door-right-b" class="absolute right-0 top-0 w-1/2 h-full bg-gray-700 border-4 border-gray-500"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">🚪</div>
+                        <p class="text-green-400 title-font text-xl">¡PUERTA ABIERTA!</p>
+                        <p class="text-white mt-4">¡Lo lograron juntos!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SUCCESS SCREEN -->
+    <div id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black">
+        <div class="text-center">
+            <div class="text-8xl mb-8">🎉</div>
+            <h1 class="title-font text-5xl text-green-400 glow-green mb-4">¡ESCAPARON!</h1>
+            <p class="text-gray-300 text-xl mb-4">Han completado El Búnker trabajando en equipo</p>
+            <p id="stats-display" class="text-gray-500 mb-4">Errores cometidos: <span id="final-errors">0</span></p>
+            <p id="time-display" class="text-gray-500 mb-8">Tiempo de escape: <span id="final-time">00:00</span></p>
+            <button onclick="location.reload()" class="bg-green-600 hover:bg-green-500 text-white py-4 px-8 rounded-lg title-font text-xl transition-all hover:scale-105">
+                🔄 JUGAR DE NUEVO
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // AUDIO ENGINE
+        // ============================================
+        const AudioEngine = {
+            ctx: null,
+            enabled: true,
+            
+            init() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            
+            resume() {
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            
+            // Electric spark sound
+            playSpark() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                // Trigger haptic feedback on mobile
+                this.triggerHaptic(50);
+                
+                const duration = 0.15;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + duration);
+                
+                filter.type = 'highpass';
+                filter.frequency.value = 500;
+                
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            
+            // Connection sound
+            playConnect() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(660, this.ctx.currentTime + 0.1);
+                
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            },
+            
+            // Error/alarm sound
+            playError() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                // Strong haptic for error
+                this.triggerHaptic([100, 50, 100]);
+                
+                const duration = 0.5;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                
+                for (let i = 0; i < 5; i++) {
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime + i * 0.1);
+                    osc.frequency.setValueAtTime(200, this.ctx.currentTime + i * 0.1 + 0.05);
+                }
+                
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            
+            // Lockdown alarm sound
+            playLockdown() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                // Long haptic pattern for lockdown
+                this.triggerHaptic([200, 100, 200, 100, 200]);
+                
+                const duration = 1.5;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth';
+                
+                // Siren effect
+                for (let i = 0; i < 3; i++) {
+                    osc.frequency.setValueAtTime(400, this.ctx.currentTime + i * 0.5);
+                    osc.frequency.linearRampToValueAtTime(800, this.ctx.currentTime + i * 0.5 + 0.25);
+                    osc.frequency.linearRampToValueAtTime(400, this.ctx.currentTime + i * 0.5 + 0.5);
+                }
+                
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            
+            // Keypad beep
+            playKeypadBeep() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                this.triggerHaptic(30);
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = 1200;
+                
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            },
+            
+            // Unlock success sound
+            playUnlock() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                this.triggerHaptic([50, 50, 100]);
+                
+                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+                
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + i * 0.1 + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.1 + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(this.ctx.currentTime + i * 0.1);
+                    osc.stop(this.ctx.currentTime + i * 0.1 + 0.3);
+                });
+            },
+            
+            // Success sound
+            playSuccess() {
+                if (!this.enabled || !this.ctx) return;
+                this.resume();
+                
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime + i * 0.15);
+                    gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + i * 0.15 + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.15 + 0.4);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start(this.ctx.currentTime + i * 0.15);
+                    osc.stop(this.ctx.currentTime + i * 0.15 + 0.4);
+                });
+            },
+            
+            // Ambient emergency hum
+            ambientNode: null,
+            ambientGain: null,
+            
+            startAmbient() {
+                if (!this.enabled || !this.ctx || this.ambientNode) return;
+                this.resume();
+                
+                this.ambientNode = this.ctx.createOscillator();
+                this.ambientGain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                
+                this.ambientNode.type = 'sawtooth';
+                this.ambientNode.frequency.value = 60;
+                
+                filter.type = 'lowpass';
+                filter.frequency.value = 200;
+                
+                this.ambientGain.gain.value = 0.05;
+                
+                this.ambientNode.connect(filter);
+                filter.connect(this.ambientGain);
+                this.ambientGain.connect(this.ctx.destination);
+                
+                this.ambientNode.start();
+            },
+            
+            stopAmbient() {
+                if (this.ambientNode) {
+                    this.ambientNode.stop();
+                    this.ambientNode = null;
+                }
+            },
+            
+            // Haptic feedback for mobile
+            triggerHaptic(pattern) {
+                if (navigator.vibrate) {
+                    navigator.vibrate(pattern);
+                }
+            },
+            
+            toggle() {
+                this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopAmbient();
+                }
+                return this.enabled;
+            }
+        };
+        
+        // ============================================
+        // GAME STATE
+        // ============================================
+        const state = {
+            gameId: null,
+            playerRole: null,
+            connections: {
+                red: null,
+                blue: null,
+                green: null,
+                yellow: null
+            },
+            selectedWire: null,
+            solved: false,
+            errorCount: 0,
+            peer: null,
+            conn: null,
+            
+            // Phase 2 - Lockdown
+            phase: 1,
+            locked: false,
+            lockdownCode: null,
+            keypadInput: '',
+            keypadRevealed: false,
+            
+            // Emergency Mode - Tension System
+            tensionLevel: 1,
+            emergencyStarted: false,
+            startTime: null,
+            emergencyInterval: null
+        };
+        
+        // Correct solution
+        const SOLUTION = {
+            red: '1',
+            blue: '3',
+            green: '2',
+            yellow: '4'
+        };
+        
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const playerAScreen = document.getElementById('player-a-screen');
+        const playerBScreen = document.getElementById('player-b-screen');
+        const successScreen = document.getElementById('success-screen');
+        const createBtn = document.getElementById('create-btn');
+        const joinBtn = document.getElementById('join-btn');
+        const linkSection = document.getElementById('link-section');
+        const joinSection = document.getElementById('join-section');
+        const gameLink = document.getElementById('game-link');
+        const copyBtn = document.getElementById('copy-btn');
+        const errorOverlay = document.getElementById('error-overlay');
+        const alertPopup = document.getElementById('alert-popup');
+        
+        // ============================================
+        // PEERJS NETWORKING
+        // ============================================
+        function generateGameId() {
+            return 'bunker-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        
+        function generateLockdownCode() {
+            return Math.floor(1000 + Math.random() * 9000).toString();
+        }
+        
+        function initializePeer(isHost) {
+            return new Promise((resolve, reject) => {
+                const peerId = isHost ? state.gameId : null;
+                
+                state.peer = new Peer(peerId, {
+                    debug: 1
+                });
+                
+                state.peer.on('open', (id) => {
+                    console.log('Peer opened with ID:', id);
+                    if (isHost) {
+                        state.gameId = id;
+                    }
+                    resolve(id);
+                });
+                
+                state.peer.on('error', (err) => {
+                    console.error('Peer error:', err);
+                    if (err.type === 'unavailable-id') {
+                        state.gameId = generateGameId();
+                        initializePeer(true).then(resolve).catch(reject);
+                    } else {
+                        document.getElementById('connection-error').classList.remove('hidden');
+                        reject(err);
+                    }
+                });
+                
+                if (isHost) {
+                    state.peer.on('connection', (conn) => {
+                        console.log('Incoming connection from:', conn.peer);
+                        state.conn = conn;
+                        setupConnection(conn);
+                    });
+                }
+            });
+        }
+        
+        function connectToPeer(hostId) {
+            return new Promise((resolve, reject) => {
+                console.log('Connecting to host:', hostId);
+                state.conn = state.peer.connect(hostId, { reliable: true });
+                
+                state.conn.on('open', () => {
+                    console.log('Connected to host!');
+                    setupConnection(state.conn);
+                    resolve();
+                });
+                
+                state.conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                    reject(err);
+                });
+            });
+        }
+        
+        function setupConnection(conn) {
+            conn.on('data', (data) => {
+                console.log('Received:', data);
+                handleMessage(data);
+            });
+            
+            conn.on('close', () => {
+                console.log('Connection closed');
+                updateConnectionStatus(false);
+            });
+        }
+        
+        function sendMessage(type, data = {}) {
+            if (state.conn && state.conn.open) {
+                state.conn.send({ type, data });
+            }
+        }
+        
+        function handleMessage(msg) {
+            const { type, data } = msg;
+            
+            switch (type) {
+                case 'player-joined':
+                    startGame();
+                    sendMessage('game-state', {
+                        connections: state.connections,
+                        errorCount: state.errorCount,
+                        phase: state.phase,
+                        locked: state.locked
+                    });
+                    break;
+                    
+                case 'game-state':
+                    state.connections = data.connections;
+                    state.errorCount = data.errorCount;
+                    state.phase = data.phase || 1;
+                    state.locked = data.locked || false;
+                    updateLiveStatus();
+                    break;
+                    
+                case 'connection-update':
+                    handleConnectionUpdate(data);
+                    break;
+                    
+                case 'error-occurred':
+                    handleErrorAlert(data);
+                    break;
+                    
+                case 'trigger-lockdown':
+                    handleLockdownTrigger(data);
+                    break;
+                    
+                case 'code-attempt':
+                    handleCodeAttempt(data);
+                    break;
+                    
+                case 'code-success':
+                    handleCodeSuccess();
+                    break;
+                    
+                case 'puzzle-solved':
+                    handlePuzzleSolved();
+                    break;
+                    
+                case 'emergency-started':
+                    handleEmergencyStarted();
+                    break;
+                    
+                case 'tension-update':
+                    handleTensionUpdate(data);
+                    break;
+            }
+        }
+        
+        function updateConnectionStatus(connected) {
+            const statusA = document.getElementById('connection-status-a');
+            const statusB = document.getElementById('connection-status-b');
+            
+            if (connected) {
+                if (statusA) {
+                    statusA.textContent = '● Conectado';
+                    statusA.classList.remove('text-yellow-400');
+                    statusA.classList.add('text-green-400');
+                }
+                if (statusB) {
+                    statusB.textContent = '● Conectado';
+                    statusB.classList.remove('text-yellow-400');
+                    statusB.classList.add('text-green-400');
+                }
+            } else {
+                if (statusA) {
+                    statusA.textContent = '● Desconectado';
+                    statusA.classList.remove('text-green-400');
+                    statusA.classList.add('text-red-400');
+                }
+                if (statusB) {
+                    statusB.textContent = '● Desconectado';
+                    statusB.classList.remove('text-green-400');
+                    statusB.classList.add('text-red-400');
+                }
+            }
+        }
+        
+        // ============================================
+        // GAME LOGIC
+        // ============================================
+        
+        function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gameId = urlParams.get('game');
+            
+            if (gameId) {
+                state.gameId = gameId;
+                joinSection.classList.remove('hidden');
+                createBtn.classList.add('hidden');
+            }
+            
+            document.addEventListener('click', () => {
+                if (!AudioEngine.ctx) {
+                    AudioEngine.init();
+                }
+            }, { once: true });
+        }
+        
+        createBtn.addEventListener('click', async () => {
+            createBtn.disabled = true;
+            createBtn.textContent = '⏳ Conectando...';
+            
+            try {
+                state.gameId = generateGameId();
+                state.playerRole = 'A';
+                
+                await initializePeer(true);
+                
+                const url = `${window.location.origin}${window.location.pathname}?game=${state.gameId}`;
+                gameLink.value = url;
+                linkSection.classList.remove('hidden');
+                createBtn.classList.add('hidden');
+                
+            } catch (err) {
+                createBtn.disabled = false;
+                createBtn.textContent = '⚡ CREAR PARTIDA';
+                console.error(err);
+            }
+        });
+        
+        copyBtn.addEventListener('click', () => {
+            gameLink.select();
+            navigator.clipboard.writeText(gameLink.value);
+            copyBtn.textContent = '✓';
+            setTimeout(() => copyBtn.textContent = '📋', 2000);
+        });
+        
+        joinBtn.addEventListener('click', async () => {
+            joinBtn.disabled = true;
+            joinBtn.textContent = '⏳ Conectando...';
+            
+            try {
+                state.playerRole = 'B';
+                
+                await initializePeer(false);
+                await connectToPeer(state.gameId);
+                
+                sendMessage('player-joined');
+                startGame();
+                
+            } catch (err) {
+                joinBtn.disabled = false;
+                joinBtn.textContent = 'UNIRSE COMO TÉCNICO';
+                document.getElementById('connection-error').classList.remove('hidden');
+                console.error(err);
+            }
+        });
+        
+        function startGame() {
+            lobbyScreen.classList.add('hidden');
+            updateConnectionStatus(true);
+            
+            if (state.playerRole === 'A') {
+                playerAScreen.classList.remove('hidden');
+                setupPlayerAInteraction();
+                AudioEngine.startAmbient();
+                
+                document.getElementById('sound-toggle-a').addEventListener('click', () => {
+                    const enabled = AudioEngine.toggle();
+                    document.getElementById('sound-toggle-a').textContent = enabled ? '🔊' : '🔇';
+                });
+                
+            } else {
+                playerBScreen.classList.remove('hidden');
+                setupPlayerBInteraction();
+                
+                document.getElementById('sound-toggle-b').addEventListener('click', () => {
+                    const enabled = AudioEngine.toggle();
+                    document.getElementById('sound-toggle-b').textContent = enabled ? '🔊' : '🔇';
+                });
+            }
+            
+            document.getElementById('waiting-indicator')?.classList.add('hidden');
+        }
+        
+        // Setup Player A wire interactions
+        function setupPlayerAInteraction() {
+            const wires = document.querySelectorAll('.wire');
+            const terminals = document.querySelectorAll('.terminal');
+            const svg = document.getElementById('connection-svg');
+            
+            wires.forEach(wire => {
+                wire.addEventListener('click', () => {
+                    if (state.locked) {
+                        AudioEngine.playError();
+                        return;
+                    }
+                    
+                    AudioEngine.playSpark();
+                    
+                    document.querySelectorAll('.wire').forEach(w => w.classList.remove('ring-4', 'ring-white'));
+                    terminals.forEach(t => t.classList.remove('highlight'));
+                    
+                    state.selectedWire = wire.dataset.color;
+                    wire.classList.add('ring-4', 'ring-white');
+                    
+                    terminals.forEach(t => {
+                        if (!state.locked) t.classList.add('highlight');
+                    });
+                });
+            });
+            
+            terminals.forEach(terminal => {
+                terminal.addEventListener('click', () => {
+                    if (!state.selectedWire || state.locked) return;
+                    
+                    const oldTerminal = state.connections[state.selectedWire];
+                    if (oldTerminal) {
+                        document.getElementById(`terminal-${oldTerminal}`).classList.remove('connected');
+                    }
+                    
+                    const terminalNum = terminal.dataset.terminal;
+                    Object.keys(state.connections).forEach(color => {
+                        if (state.connections[color] === terminalNum) {
+                            state.connections[color] = null;
+                            updateConnectionDisplay(color, null);
+                        }
+                    });
+                    
+                    state.connections[state.selectedWire] = terminalNum;
+                    terminal.classList.add('connected');
+                    
+                    AudioEngine.playConnect();
+                    
+                    if (SOLUTION[state.selectedWire] !== terminalNum) {
+                        triggerError();
+                    }
+                    
+                    updateConnectionDisplay(state.selectedWire, terminalNum);
+                    drawConnections();
+                    
+                    sendMessage('connection-update', {
+                        connections: state.connections,
+                        errorCount: state.errorCount
+                    });
+                    
+                    // Start emergency protocol on first connection
+                    const totalConnections = Object.values(state.connections).filter(c => c !== null).length;
+                    if (totalConnections >= 1 && !state.emergencyStarted) {
+                        startEmergencyProtocol();
+                    }
+                    
+                    // Check for lockdown trigger (2 correct connections)
+                    checkLockdownTrigger();
+                    
+                    // Check final solution
+                    checkSolution();
+                    
+                    document.querySelectorAll('.wire').forEach(w => w.classList.remove('ring-4', 'ring-white'));
+                    terminals.forEach(t => t.classList.remove('highlight'));
+                    state.selectedWire = null;
+                });
+            });
+            
+            document.getElementById('reset-wires').addEventListener('click', () => {
+                if (state.locked) {
+                    AudioEngine.playError();
+                    return;
+                }
+                
+                state.connections = { red: null, blue: null, green: null, yellow: null };
+                terminals.forEach(t => t.classList.remove('connected'));
+                ['red', 'blue', 'green', 'yellow'].forEach(c => updateConnectionDisplay(c, null));
+                svg.innerHTML = '';
+                
+                sendMessage('connection-update', {
+                    connections: state.connections,
+                    errorCount: state.errorCount
+                });
+            });
+        }
+        
+        // Setup Player B keypad interaction
+        function setupPlayerBInteraction() {
+            // Coffee stain reveal
+            const coffeeStain = document.getElementById('keypad-coffee-stain');
+            coffeeStain.addEventListener('click', () => {
+                if (!state.keypadRevealed) {
+                    state.keypadRevealed = true;
+                    coffeeStain.classList.add('revealed');
+                    AudioEngine.playSpark();
+                }
+            });
+            
+            // Keypad buttons
+            const keypadBtns = document.querySelectorAll('.keypad-btn');
+            const keypadDisplay = document.getElementById('keypad-display');
+            const keypadStatus = document.getElementById('keypad-status');
+            
+            keypadBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const num = btn.dataset.num;
+                    AudioEngine.playKeypadBeep();
+                    
+                    if (num === 'clear') {
+                        state.keypadInput = '';
+                        keypadDisplay.textContent = '----';
+                        keypadStatus.textContent = 'Esperando código...';
+                        keypadStatus.classList.remove('text-red-500', 'text-green-500');
+                        keypadStatus.classList.add('text-gray-500');
+                    } else if (num === 'enter') {
+                        if (state.keypadInput.length === 4) {
+                            sendMessage('code-attempt', { code: state.keypadInput });
+                            keypadStatus.textContent = 'Verificando...';
+                        }
+                    } else {
+                        if (state.keypadInput.length < 4) {
+                            state.keypadInput += num;
+                            keypadDisplay.textContent = state.keypadInput.padEnd(4, '-');
+                        }
+                    }
+                });
+            });
+        }
+        
+        // ============================================
+        // EMERGENCY MODE - THE PANIC ENGINE
+        // ============================================
+        function startEmergencyProtocol() {
+            if (state.emergencyStarted || state.playerRole !== 'A') return;
+            state.emergencyStarted = true;
+            state.startTime = Date.now();
+            
+            // Show tension meter
+            document.getElementById('tension-meter').classList.remove('hidden');
+            
+            // Notify Player B that emergency started
+            sendMessage('emergency-started');
+            
+            state.emergencyInterval = setInterval(() => {
+                if (state.solved) {
+                    clearInterval(state.emergencyInterval);
+                    return;
+                }
+                
+                const elapsed = (Date.now() - state.startTime) / 1000;
+                state.tensionLevel = 1 + (elapsed / 30); // Increases every 30 seconds
+                
+                // 1. Increase ambient frequency (from 60Hz upward - more unsettling)
+                if (AudioEngine.ambientNode && AudioEngine.ctx) {
+                    const newFreq = Math.min(60 + (elapsed * 1.5), 150); // Cap at 150Hz
+                    AudioEngine.ambientNode.frequency.setTargetAtTime(newFreq, AudioEngine.ctx.currentTime, 0.5);
+                }
+                
+                // 2. Increase ambient volume slightly
+                if (AudioEngine.ambientGain && AudioEngine.ctx) {
+                    const newGain = Math.min(0.05 + (elapsed * 0.002), 0.15);
+                    AudioEngine.ambientGain.gain.setTargetAtTime(newGain, AudioEngine.ctx.currentTime, 0.5);
+                }
+                
+                // 3. Speed up flicker animation
+                const flickerSpeed = Math.max(0.3, 3 - (elapsed / 20));
+                document.querySelectorAll('.flicker').forEach(el => {
+                    el.style.animationDuration = `${flickerSpeed}s`;
+                });
+                
+                // 4. Speed up spark animation
+                const sparkSpeed = Math.max(0.03, 0.1 - (elapsed / 500));
+                document.querySelectorAll('.spark').forEach(el => {
+                    el.style.animationDuration = `${sparkSpeed}s`;
+                });
+                
+                // 5. Increase red glow intensity progressively
+                const intensity = Math.min(0.6, 0.2 + (elapsed / 120));
+                const emergencyGlow = document.getElementById('emergency-glow');
+                if (emergencyGlow) {
+                    emergencyGlow.style.opacity = intensity;
+                    // Also add pulsing effect that gets faster
+                    const pulseSpeed = Math.max(0.5, 2 - (elapsed / 60));
+                    emergencyGlow.style.animationDuration = `${pulseSpeed}s`;
+                }
+                
+                // 6. Add screen shake at high tension (after 60 seconds)
+                if (elapsed > 60 && Math.random() > 0.9) {
+                    triggerScreenShake();
+                }
+                
+                // 7. Random sparks sound at higher tension
+                if (elapsed > 30 && Math.random() > 0.95) {
+                    AudioEngine.playSpark();
+                }
+                
+                // 8. Periodic haptic pulses on mobile (heartbeat effect)
+                if (elapsed > 45 && Math.floor(elapsed) % 3 === 0) {
+                    AudioEngine.triggerHaptic(30);
+                }
+                
+                // 9. Update tension meter UI
+                updateTensionMeter(elapsed);
+                
+                // Send tension update to Player B
+                sendMessage('tension-update', { 
+                    tensionLevel: state.tensionLevel,
+                    elapsed: elapsed 
+                });
+                
+            }, 1000);
+        }
+        
+        function updateTensionMeter(elapsed) {
+            // Update timer
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = Math.floor(elapsed % 60);
+            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const timeEl = document.getElementById('tension-time');
+            if (timeEl) timeEl.textContent = timeStr;
+            
+            // Update bar (max at 120 seconds = 100%)
+            const percentage = Math.min((elapsed / 120) * 100, 100);
+            const barEl = document.getElementById('tension-bar');
+            if (barEl) barEl.style.width = `${percentage}%`;
+            
+            // Update warning text based on tension
+            const warningEl = document.getElementById('tension-warning');
+            if (warningEl) {
+                if (elapsed < 30) {
+                    warningEl.textContent = 'Sistema inestable';
+                    warningEl.className = 'text-center text-xs mt-1 text-yellow-500';
+                } else if (elapsed < 60) {
+                    warningEl.textContent = '⚠️ Fluctuaciones detectadas';
+                    warningEl.className = 'text-center text-xs mt-1 text-orange-500';
+                } else if (elapsed < 90) {
+                    warningEl.textContent = '🔥 ¡Sobrecalentamiento crítico!';
+                    warningEl.className = 'text-center text-xs mt-1 text-red-500 font-bold';
+                } else {
+                    warningEl.textContent = '💀 ¡COLAPSO INMINENTE!';
+                    warningEl.className = 'text-center text-xs mt-1 text-red-400 font-bold animate-pulse';
+                }
+            }
+        }
+        
+        function triggerScreenShake() {
+            const panel = document.getElementById('main-panel-a');
+            if (!panel) return;
+            
+            panel.style.transition = 'transform 0.1s';
+            const shakeIntensity = Math.min(5, state.tensionLevel);
+            
+            const shake = () => {
+                const x = (Math.random() - 0.5) * shakeIntensity;
+                const y = (Math.random() - 0.5) * shakeIntensity;
+                panel.style.transform = `translate(${x}px, ${y}px)`;
+            };
+            
+            shake();
+            setTimeout(shake, 50);
+            setTimeout(shake, 100);
+            setTimeout(() => {
+                panel.style.transform = 'translate(0, 0)';
+            }, 150);
+        }
+        
+        function handleEmergencyStarted() {
+            // Player B receives notification that emergency started
+            state.emergencyStarted = true;
+            state.startTime = Date.now();
+            
+            // Show warning message
+            const warningDiv = document.createElement('div');
+            warningDiv.id = 'emergency-warning';
+            warningDiv.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-900 border-2 border-red-500 px-4 py-2 rounded-lg z-50';
+            warningDiv.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⚡</span>
+                    <span class="text-red-300 text-sm">Sistema inestable - ¡Dense prisa!</span>
+                </div>
+            `;
+            document.body.appendChild(warningDiv);
+            
+            // Add subtle red pulsing to manual page
+            const manualPage = document.getElementById('manual-page');
+            if (manualPage) {
+                manualPage.style.boxShadow = '0 0 30px rgba(255, 0, 0, 0.3)';
+            }
+        }
+        
+        function handleTensionUpdate(data) {
+            state.tensionLevel = data.tensionLevel;
+            
+            // Subtle effects on Player B's screen based on tension
+            const manualPage = document.getElementById('manual-page');
+            if (manualPage && data.elapsed > 30) {
+                const shake = Math.sin(data.elapsed * 0.5) * (data.tensionLevel * 0.5);
+                manualPage.style.transform = `rotate(${1 + shake * 0.1}deg)`;
+            }
+            
+            // Flicker the lights on Player B side at high tension
+            if (data.elapsed > 45) {
+                const powerOverlay = document.getElementById('power-failure-overlay');
+                if (powerOverlay && Math.random() > 0.9) {
+                    powerOverlay.style.opacity = '0.3';
+                    setTimeout(() => {
+                        powerOverlay.style.opacity = state.errorCount >= 3 ? '0.3' : '0';
+                    }, 100);
+                }
+            }
+        }
+        
+        // Check if lockdown should trigger
+        function checkLockdownTrigger() {
+            if (state.locked || state.phase !== 1) return;
+            
+            let correctCount = 0;
+            Object.keys(SOLUTION).forEach(color => {
+                if (state.connections[color] === SOLUTION[color]) correctCount++;
+            });
+            
+            if (correctCount >= 2) {
+                triggerLockdown();
+            }
+        }
+        
+        // Trigger lockdown for Player A
+        function triggerLockdown() {
+            state.locked = true;
+            state.phase = 2;
+            state.lockdownCode = generateLockdownCode();
+            
+            // Update UI
+            document.getElementById('phase-indicator-a').textContent = 'FASE 2';
+            document.getElementById('phase-indicator-a').classList.remove('bg-gray-700', 'text-gray-400');
+            document.getElementById('phase-indicator-a').classList.add('bg-yellow-700', 'text-yellow-300');
+            
+            // Show lockdown display
+            document.getElementById('lockdown-display').classList.remove('hidden');
+            document.getElementById('lockdown-code').textContent = state.lockdownCode;
+            
+            // Lock wires
+            document.querySelectorAll('.wire').forEach(w => w.classList.add('locked'));
+            document.querySelectorAll('.terminal').forEach(t => t.classList.add('locked'));
+            document.getElementById('main-panel-a').classList.add('border-yellow-500');
+            
+            // Play alarm
+            AudioEngine.playLockdown();
+            
+            // Notify Player B
+            sendMessage('trigger-lockdown', { code: state.lockdownCode });
+        }
+        
+        // Handle lockdown trigger for Player B
+        function handleLockdownTrigger(data) {
+            state.locked = true;
+            state.phase = 2;
+            state.lockdownCode = data.code;
+            
+            // Update UI
+            document.getElementById('phase-indicator-b').textContent = 'FASE 2';
+            document.getElementById('phase-indicator-b').classList.remove('bg-amber-700', 'text-amber-300');
+            document.getElementById('phase-indicator-b').classList.add('bg-yellow-700', 'text-yellow-300');
+            
+            // Show lockdown alert
+            const lockdownAlert = document.getElementById('lockdown-alert');
+            lockdownAlert.classList.remove('hidden');
+            setTimeout(() => lockdownAlert.classList.add('hidden'), 4000);
+            
+            // Show keypad
+            document.getElementById('security-keypad-container').classList.remove('hidden');
+            document.getElementById('lockdown-status-b').classList.remove('hidden');
+            
+            // Play alarm
+            AudioEngine.playLockdown();
+        }
+        
+        // Handle code attempt from Player B (for Player A to verify)
+        function handleCodeAttempt(data) {
+            if (data.code === state.lockdownCode) {
+                // Correct code!
+                unlockSystem();
+                sendMessage('code-success');
+            } else {
+                // Wrong code
+                sendMessage('code-failed');
+                AudioEngine.playError();
+            }
+        }
+        
+        // Unlock system after correct code
+        function unlockSystem() {
+            state.locked = false;
+            
+            // Update UI for Player A
+            document.getElementById('lockdown-display').classList.add('hidden');
+            document.querySelectorAll('.wire').forEach(w => w.classList.remove('locked'));
+            document.querySelectorAll('.terminal').forEach(t => t.classList.remove('locked'));
+            document.getElementById('main-panel-a').classList.remove('border-yellow-500');
+            document.getElementById('main-panel-a').classList.add('border-green-500');
+            
+            document.getElementById('phase-indicator-a').textContent = 'DESBLOQUEADO';
+            document.getElementById('phase-indicator-a').classList.remove('bg-yellow-700', 'text-yellow-300');
+            document.getElementById('phase-indicator-a').classList.add('bg-green-700', 'text-green-300');
+            
+            AudioEngine.playUnlock();
+        }
+        
+        // Handle code success for Player B
+        function handleCodeSuccess() {
+            state.locked = false;
+            
+            const keypadStatus = document.getElementById('keypad-status');
+            keypadStatus.textContent = '✓ ¡SISTEMA DESBLOQUEADO!';
+            keypadStatus.classList.remove('text-gray-500', 'text-red-500');
+            keypadStatus.classList.add('text-green-500');
+            
+            document.getElementById('lockdown-status-b').textContent = '✓ Sistema desbloqueado';
+            document.getElementById('lockdown-status-b').classList.remove('text-yellow-400');
+            document.getElementById('lockdown-status-b').classList.add('text-green-400');
+            
+            document.getElementById('phase-indicator-b').textContent = 'DESBLOQUEADO';
+            document.getElementById('phase-indicator-b').classList.remove('bg-yellow-700', 'text-yellow-300');
+            document.getElementById('phase-indicator-b').classList.add('bg-green-700', 'text-green-300');
+            
+            AudioEngine.playUnlock();
+        }
+        
+        function triggerError() {
+            state.errorCount++;
+            document.getElementById('error-count').textContent = state.errorCount;
+            
+            errorOverlay.classList.add('error-flash');
+            setTimeout(() => errorOverlay.classList.remove('error-flash'), 500);
+            
+            AudioEngine.playError();
+            
+            sendMessage('error-occurred', { errorCount: state.errorCount });
+        }
+        
+        function handleErrorAlert(data) {
+            AudioEngine.playError();
+            
+            alertPopup.classList.remove('hidden');
+            setTimeout(() => alertPopup.classList.add('hidden'), 2000);
+            
+            state.errorCount = data?.errorCount || state.errorCount + 1;
+            document.getElementById('error-count-b').textContent = state.errorCount;
+            
+            // Progressive dimming based on errors
+            const manualPage = document.getElementById('manual-page');
+            const powerOverlay = document.getElementById('power-failure-overlay');
+            
+            if (state.errorCount >= 5) {
+                manualPage.classList.add('very-dimmed');
+                powerOverlay.style.opacity = '0.5';
+            } else if (state.errorCount >= 3) {
+                manualPage.classList.add('dimmed');
+                powerOverlay.style.opacity = '0.3';
+            }
+        }
+        
+        function updateConnectionDisplay(color, terminal) {
+            const el = document.getElementById(`${color}-conn`);
+            if (el) {
+                el.textContent = terminal ? `Borne ${terminal}` : '---';
+                el.classList.toggle('text-green-400', terminal !== null);
+            }
+        }
+        
+        function drawConnections() {
+            const svg = document.getElementById('connection-svg');
+            const container = svg.parentElement;
+            svg.innerHTML = '';
+            
+            const colors = { red: '#ef4444', blue: '#3b82f6', green: '#22c55e', yellow: '#eab308' };
+            
+            Object.keys(state.connections).forEach(color => {
+                const terminal = state.connections[color];
+                if (!terminal) return;
+                
+                const wire = document.getElementById(`wire-${color}`);
+                const term = document.getElementById(`terminal-${terminal}`);
+                
+                const wireRect = wire.getBoundingClientRect();
+                const termRect = term.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                const x1 = wireRect.right - containerRect.left;
+                const y1 = wireRect.top + wireRect.height/2 - containerRect.top;
+                const x2 = termRect.left - containerRect.left;
+                const y2 = termRect.top + termRect.height/2 - containerRect.top;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', colors[color]);
+                line.setAttribute('stroke-width', '4');
+                line.setAttribute('class', 'connection-line');
+                
+                svg.appendChild(line);
+            });
+        }
+        
+        function handleConnectionUpdate(data) {
+            state.connections = data.connections;
+            state.errorCount = data.errorCount;
+            
+            updateLiveStatus();
+        }
+        
+        function updateLiveStatus() {
+            Object.keys(state.connections).forEach(color => {
+                const el = document.getElementById(`live-${color}`);
+                if (el) {
+                    const terminal = state.connections[color];
+                    el.textContent = terminal ? `Borne ${terminal}` : '---';
+                    
+                    const isCorrect = terminal === SOLUTION[color];
+                    el.classList.remove('text-green-400', 'text-red-400');
+                    if (terminal) {
+                        el.classList.add(isCorrect ? 'text-green-400' : 'text-red-400');
+                    }
+                }
+            });
+            
+            let correct = 0;
+            Object.keys(SOLUTION).forEach(color => {
+                if (state.connections[color] === SOLUTION[color]) correct++;
+            });
+            const correctEl = document.getElementById('correct-count');
+            if (correctEl) correctEl.textContent = correct;
+            
+            const errorEl = document.getElementById('error-count-b');
+            if (errorEl) errorEl.textContent = state.errorCount;
+        }
+        
+        function checkSolution() {
+            if (state.locked) return; // Can't win while locked
+            
+            const isCorrect = Object.keys(SOLUTION).every(
+                color => state.connections[color] === SOLUTION[color]
+            );
+            
+            if (isCorrect && !state.solved) {
+                state.solved = true;
+                
+                AudioEngine.stopAmbient();
+                AudioEngine.playSuccess();
+                
+                document.getElementById('sparks').classList.add('hidden');
+                document.getElementById('emergency-glow').classList.add('hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('door-a').classList.remove('hidden');
+                    setTimeout(() => {
+                        document.getElementById('door-left-a').classList.add('door-open-left');
+                        document.getElementById('door-right-a').classList.add('door-open-right');
+                    }, 500);
+                }, 500);
+                
+                sendMessage('puzzle-solved', { errorCount: state.errorCount });
+                
+                setTimeout(() => {
+                    showSuccess();
+                }, 3500);
+            }
+        }
+        
+        function handlePuzzleSolved() {
+            state.solved = true;
+            
+            AudioEngine.playSuccess();
+            
+            document.getElementById('door-b').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('door-left-b').classList.add('door-open-left');
+                document.getElementById('door-right-b').classList.add('door-open-right');
+            }, 500);
+            
+            setTimeout(() => {
+                showSuccess();
+            }, 3500);
+        }
+        
+        function showSuccess() {
+            // Stop emergency protocol
+            if (state.emergencyInterval) {
+                clearInterval(state.emergencyInterval);
+            }
+            
+            playerAScreen.classList.add('hidden');
+            playerBScreen.classList.add('hidden');
+            successScreen.classList.remove('hidden');
+            document.getElementById('final-errors').textContent = state.errorCount;
+            
+            // Calculate and show time
+            if (state.startTime) {
+                const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                document.getElementById('final-time').textContent = timeStr;
+                
+                // Add rating based on performance
+                let rating = '';
+                if (state.errorCount === 0 && elapsed < 60) {
+                    rating = '⭐⭐⭐ ¡PERFECTOS!';
+                } else if (state.errorCount <= 2 && elapsed < 90) {
+                    rating = '⭐⭐ ¡Excelente equipo!';
+                } else if (state.errorCount <= 4 && elapsed < 120) {
+                    rating = '⭐ Buen trabajo';
+                } else {
+                    rating = '¡Lo lograron... por poco!';
+                }
+                
+                const ratingDiv = document.createElement('p');
+                ratingDiv.className = 'text-yellow-400 text-2xl mb-4 title-font';
+                ratingDiv.textContent = rating;
+                document.getElementById('stats-display').before(ratingDiv);
+            }
+        }
+        
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
